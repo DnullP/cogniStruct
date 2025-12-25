@@ -1,0 +1,60 @@
+.editor {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #1e1e1e;
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #252526;
+  border-bottom: 1px solid #3e3e3e;
+}
+
+.save-button {
+  padding: 6px 16px;
+  background: #0e639c;
+  border: none;
+  border-radius: 4px;
+  color: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.save-button:hover:not(:disabled) {
+  background: #1177bb;
+}
+
+.save-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.editor-file-path {
+  font-size: 13px;
+  color: #9d9d9d;
+  flex: 1;
+}
+
+.editor-content {
+  flex: 1;
+  overflow: auto;
+}
+
+.editor-content .cm-editor {
+  height: 100%;
+  font-size: 14px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.editor-content .cm-scroller {
+  overflow: auto;
+}
+
+.editor-content .cm-content {
+  padding: 16px;
+}

@@ -1,51 +1,74 @@
-import { createSignal } from "solid-js";
-import logo from "./assets/logo.svg";
-import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
+import { Show, createEffect } from 'solid-js';
+import { invoke } from '@tauri-apps/api/core';
+import { open } from '@tauri-apps/plugin-dialog';
+import { appStore } from './stores/appStore';
+import { FileTree } from './components/FileTree';
+import { SearchBar } from './components/SearchBar';
+import { GraphView } from './components/GraphView';
+import { Editor } from './components/Editor';
+import './App.css';
 
 function App() {
-  const [greetMsg, setGreetMsg] = createSignal("");
-  const [name, setName] = createSignal("");
+  const openVault = async () => {
+    try {
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        title: 'Open Vault',
+      });
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name: name() }));
-  }
+      if (selected) {
+        const path = typeof selected === 'string' ? selected : selected.path;
+        await invoke('open_vault', { path });
+        appStore.setVaultPath(path);
+
+        // Load graph data
+        const graphData = await invoke('get_graph_data');
+        appStore.setGraphData(graphData as any);
+
+        // Load file tree
+        const fileTree = await invoke('get_file_tree');
+        appStore.setFileTree(fileTree as any);
+      }
+    } catch (error) {
+      console.error('Failed to open vault:', error);
+      alert('Failed to open vault: ' + error);
+    }
+  };
+
+  const toggleView = () => {
+    appStore.setViewMode(appStore.viewMode() === 'graph' ? 'editor' : 'graph');
+  };
 
   return (
-    <main class="container">
-      <h1>Welcome to Tauri + Solid</h1>
-
-      <div class="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" class="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" class="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://solidjs.com" target="_blank">
-          <img src={logo} class="logo solid" alt="Solid logo" />
-        </a>
+    <div class="app">
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h2>CogniStruct</h2>
+          <button onClick={openVault} class="open-vault-btn">
+            📁 Open Vault
+          </button>
+        </div>
+        <SearchBar />
+        <FileTree />
       </div>
-      <p>Click on the Tauri, Vite, and Solid logos to learn more.</p>
 
-      <form
-        class="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg()}</p>
-    </main>
+      <div class="main-content">
+        <div class="view-toolbar">
+          <button onClick={toggleView} class="view-toggle-btn">
+            {appStore.viewMode() === 'graph' ? '📝 Editor' : '🌐 Graph'}
+          </button>
+        </div>
+
+        <Show when={appStore.vaultPath()} fallback={<div class="welcome">Open a vault to get started</div>}>
+          <Show when={appStore.viewMode() === 'graph'} fallback={<Editor />}>
+            <GraphView />
+          </Show>
+        </Show>
+      </div>
+    </div>
   );
 }
 
 export default App;
+

@@ -4,17 +4,19 @@
   "version": "0.1.0",
   "identifier": "com.kaiqiu.cognistruct",
   "build": {
-    "beforeDevCommand": "bun run dev",
+    "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "bun run build",
+    "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
   "app": {
     "windows": [
       {
-        "title": "cognistruct",
-        "width": 800,
-        "height": 600
+        "title": "CogniStruct",
+        "width": 1400,
+        "height": 900,
+        "minWidth": 1000,
+        "minHeight": 600
       }
     ],
     "security": {
