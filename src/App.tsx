@@ -19,15 +19,18 @@ function App() {
 
       if (selected) {
         const path = typeof selected === 'string' ? selected : selected.path;
+        console.log('Opening vault:', path);
         await invoke('open_vault', { path });
         appStore.setVaultPath(path);
 
         // Load graph data
         const graphData = await invoke('get_graph_data');
+        console.log('Graph data received:', graphData);
         appStore.setGraphData(graphData as any);
 
         // Load file tree
         const fileTree = await invoke('get_file_tree');
+        console.log('File tree received:', fileTree);
         appStore.setFileTree(fileTree as any);
       }
     } catch (error) {

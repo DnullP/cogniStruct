@@ -5,7 +5,7 @@ use crate::db::{Database, Edge, Node};
 use anyhow::Result;
 use std::collections::HashMap;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use walkdir::WalkDir;
 
 pub use parser::parse_markdown;
@@ -21,6 +21,9 @@ pub fn calculate_hash(content: &str) -> String {
 }
 
 pub fn sync_vault(vault_path: &Path, db: &mut Database) -> Result<()> {
+    // Clear existing data to avoid accumulation
+    db.clear_all()?;
+    
     let mut path_to_uuid: HashMap<String, String> = HashMap::new();
     let mut title_to_uuid: HashMap<String, String> = HashMap::new();
     
