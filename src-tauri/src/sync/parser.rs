@@ -74,3 +74,89 @@ pub fn parse_markdown(content: &str) -> ParsedMarkdown {
         tags: tags.into_iter().collect(),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_title() {
+        let content = "# My Title\n\nSome content here.";
+        let parsed = parse_markdown(content);
+        assert_eq!(parsed.title, "My Title");
+    }
+
+    #[test]
+    fn test_parse_title_no_heading() {
+        let content = "Just some text without heading.";
+        let parsed = parse_markdown(content);
+        assert_eq!(parsed.title, "Just some text without heading.");
+    }
+
+    #[test]
+    fn test_parse_wikilinks() {
+        let content = "# Test\n\nLink to [[Page A]] and [[Page B]].";
+        let parsed = parse_markdown(content);
+        assert_eq!(parsed.wikilinks.len(), 2);
+        assert!(parsed.wikilinks.contains(&"Page A".to_string()));
+        assert!(parsed.wikilinks.contains(&"Page B".to_string()));
+    }
+
+    #[test]
+    fn test_parse_wikilinks_with_alias() {
+        let content = "# Test\n\nLink to [[Page A|别名]] here.";
+        let parsed = parse_markdown(content);
+        assert_eq!(parsed.wikilinks.len(), 1);
+        assert!(parsed.wikilinks.contains(&"Page A".to_string()));
+    }
+
+    #[test]
+    fn test_parse_tags() {
+        let content = "# Test\n\nSome content #tag1 and #tag2 here.";
+        let parsed = parse_markdown(content);
+        assert_eq!(parsed.tags.len(), 2);
+        assert!(parsed.tags.contains(&"tag1".to_string()));
+        assert!(parsed.tags.contains(&"tag2".to_string()));
+    }
+
+    #[test]
+    fn test_parse_complex_content() {
+        let content = r#"# Project A
+
+这是项目 A 的说明文档。
+
+## 相关链接
+
+- [[Index]]
+- [[Project B]]
+- [[Meeting Notes]]
+
+#project #rust
+"#;
+        let parsed = parse_markdown(content);
+        assert_eq!(parsed.title, "Project A");
+        assert_eq!(parsed.wikilinks.len(), 3);
+        assert!(parsed.wikilinks.contains(&"Index".to_string()));
+        assert!(parsed.wikilinks.contains(&"Project B".to_string()));
+        assert!(parsed.wikilinks.contains(&"Meeting Notes".to_string()));
+        assert_eq!(parsed.tags.len(), 2);
+        assert!(parsed.tags.contains(&"project".to_string()));
+        assert!(parsed.tags.contains(&"rust".to_string()));
+    }
+
+    #[test]
+    fn test_empty_content() {
+        let content = "";
+        let parsed = parse_markdown(content);
+        assert_eq!(parsed.title, "Untitled");
+        assert!(parsed.wikilinks.is_empty());
+        assert!(parsed.tags.is_empty());
+    }
+
+    #[test]
+    fn test_duplicate_wikilinks() {
+        let content = "# Test\n\n[[Page A]] and [[Page A]] again.";
+        let parsed = parse_markdown(content);
+        assert_eq!(parsed.wikilinks.len(), 1);
+    }
+}

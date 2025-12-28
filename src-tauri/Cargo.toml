@@ -32,3 +32,6 @@ regex = "1"
 uuid = { version = "1", features = ["v4"] }
 rayon = "=1.10.0"
 graph_builder = "=0.3.0"
+
+[dev-dependencies]
+tempfile = "3"

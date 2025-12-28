@@ -1,0 +1,129 @@
+/* Dockview container */
+.dockview-container {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    position: relative;
+}
+
+/* Theme variables - Abyss dark theme */
+.dockview-container.dockview-theme-abyss {
+    --dv-background-color: var(--bg-primary, #1e1e1e);
+    --dv-paneview-header-border-color: var(--border-color, #3e3e3e);
+    --dv-tabs-and-actions-container-background-color: var(--bg-secondary, #252526);
+    --dv-activegroup-visiblepanel-tab-background-color: var(--bg-tertiary, #3c3c3c);
+    --dv-activegroup-hiddenpanel-tab-background-color: var(--bg-secondary, #252526);
+    --dv-inactivegroup-visiblepanel-tab-background-color: var(--bg-tertiary, #3c3c3c);
+    --dv-inactivegroup-hiddenpanel-tab-background-color: var(--bg-secondary, #252526);
+    --dv-tab-divider-color: var(--border-color, #3e3e3e);
+    --dv-activegroup-visiblepanel-tab-color: var(--text-primary, #d4d4d4);
+    --dv-activegroup-hiddenpanel-tab-color: var(--text-secondary, #9a9a9a);
+    --dv-inactivegroup-visiblepanel-tab-color: var(--text-primary, #d4d4d4);
+    --dv-inactivegroup-hiddenpanel-tab-color: var(--text-secondary, #9a9a9a);
+    --dv-separator-border: var(--border-color, #3e3e3e);
+    --dv-group-view-background-color: var(--bg-primary, #1e1e1e);
+    /* Drop overlay - IMPORTANT: must have visible values for drag & drop to work */
+    --dv-drag-over-background-color: rgba(14, 99, 156, 0.3);
+    --dv-drag-over-border-color: var(--accent-color, #0e639c);
+    --dv-drag-over-border: 2px solid var(--accent-color, #0e639c);
+    --dv-activegroup-focus-border-color: var(--accent-color, #0e639c);
+}
+
+/* Active group highlight */
+.dockview-container .groupview.active-group {
+    outline: 1px solid var(--accent-color, #0e639c);
+    outline-offset: -1px;
+}
+
+.dockview-container .groupview:not(.active-group) {
+    outline: 1px solid transparent;
+    outline-offset: -1px;
+    transition: outline-color 0.15s ease;
+}
+
+.dockview-container .groupview:hover:not(.active-group) {
+    outline-color: var(--border-color, #3e3e3e);
+}
+
+/* SolidJS Panel content */
+.dockview-solid-panel {
+    background-color: var(--bg-primary, #1e1e1e);
+    color: var(--text-primary, #d4d4d4);
+}
+
+/* Custom tab styling */
+.dockview-solid-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 8px;
+    height: 100%;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.dockview-solid-tab .tab-icon {
+    font-size: 14px;
+}
+
+.dockview-solid-tab .tab-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Light theme overrides */
+[data-theme="light"] .dockview-container.dockview-theme-abyss {
+    --dv-background-color: var(--bg-primary, #ffffff);
+    --dv-paneview-header-border-color: var(--border-color, #d4d4d4);
+    --dv-tabs-and-actions-container-background-color: var(--bg-secondary, #f3f3f3);
+    --dv-activegroup-visiblepanel-tab-background-color: var(--bg-tertiary, #e4e4e4);
+    --dv-activegroup-hiddenpanel-tab-background-color: var(--bg-secondary, #f3f3f3);
+    --dv-inactivegroup-visiblepanel-tab-background-color: var(--bg-tertiary, #e4e4e4);
+    --dv-inactivegroup-hiddenpanel-tab-background-color: var(--bg-secondary, #f3f3f3);
+    --dv-tab-divider-color: var(--border-color, #d4d4d4);
+    --dv-activegroup-visiblepanel-tab-color: var(--text-primary, #1e1e1e);
+    --dv-activegroup-hiddenpanel-tab-color: var(--text-secondary, #6a6a6a);
+    --dv-inactivegroup-visiblepanel-tab-color: var(--text-primary, #1e1e1e);
+    --dv-inactivegroup-hiddenpanel-tab-color: var(--text-secondary, #6a6a6a);
+    --dv-separator-border: var(--border-color, #d4d4d4);
+    --dv-group-view-background-color: var(--bg-primary, #ffffff);
+}
+
+/* Sidebar style panel (hidden header) */
+.dockview-container .groupview.sidebar-group .tabs-and-actions-container {
+    display: none;
+}
+
+/* Explorer/Sidebar panel styles */
+.explorer-panel,
+.sidebar-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--bg-secondary, #252526);
+    overflow: hidden;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 35px;
+    padding: 0 16px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border-color, #3e3e3e);
+}
+
+.sidebar-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary, #9a9a9a);
+    text-transform: uppercase;
+}
+
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}

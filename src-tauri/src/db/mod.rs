@@ -298,3 +298,223 @@ impl Database {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+    use tempfile::TempDir;
+
+    fn setup_test_db() -> (Database, TempDir) {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("test.db");
+        let db = Database::new(db_path).unwrap();
+        (db, temp_dir)
+    }
+
+    #[test]
+    fn test_database_creation() {
+        let (db, _temp_dir) = setup_test_db();
+        let nodes = db.get_all_nodes().unwrap();
+        assert_eq!(nodes.len(), 0);
+    }
+
+    #[test]
+    fn test_upsert_node() {
+        let (mut db, _temp_dir) = setup_test_db();
+
+        let node = Node {
+            uuid: "test-uuid-1".to_string(),
+            path: "test.md".to_string(),
+            title: "Test Node".to_string(),
+            content: "Test content".to_string(),
+            node_type: "note".to_string(),
+            hash: "test-hash".to_string(),
+            created_at: 1234567890,
+            updated_at: 1234567890,
+        };
+
+        db.upsert_node(&node).unwrap();
+
+        let nodes = db.get_all_nodes().unwrap();
+        assert_eq!(nodes.len(), 1);
+        assert_eq!(nodes[0].uuid, "test-uuid-1");
+        assert_eq!(nodes[0].title, "Test Node");
+    }
+
+    #[test]
+    fn test_upsert_node_update() {
+        let (mut db, _temp_dir) = setup_test_db();
+
+        let node1 = Node {
+            uuid: "test-uuid-1".to_string(),
+            path: "test.md".to_string(),
+            title: "Test Node".to_string(),
+            content: "Test content".to_string(),
+            node_type: "note".to_string(),
+            hash: "test-hash".to_string(),
+            created_at: 1234567890,
+            updated_at: 1234567890,
+        };
+
+        db.upsert_node(&node1).unwrap();
+
+        // Update the same node
+        let node2 = Node {
+            uuid: "test-uuid-1".to_string(),
+            path: "test.md".to_string(),
+            title: "Updated Node".to_string(),
+            content: "Updated content".to_string(),
+            node_type: "note".to_string(),
+            hash: "new-hash".to_string(),
+            created_at: 1234567890,
+            updated_at: 1234567900,
+        };
+
+        db.upsert_node(&node2).unwrap();
+
+        let nodes = db.get_all_nodes().unwrap();
+        assert_eq!(nodes.len(), 1);
+        assert_eq!(nodes[0].title, "Updated Node");
+        assert_eq!(nodes[0].hash, "new-hash");
+    }
+
+    #[test]
+    fn test_upsert_edge() {
+        let (mut db, _temp_dir) = setup_test_db();
+
+        let edge = Edge {
+            src_uuid: "uuid-1".to_string(),
+            dst_uuid: "uuid-2".to_string(),
+            relation: "link".to_string(),
+            weight: 1.0,
+            source: "wikilink".to_string(),
+        };
+
+        db.upsert_edge(&edge).unwrap();
+
+        let edges = db.get_all_edges().unwrap();
+        assert_eq!(edges.len(), 1);
+        assert_eq!(edges[0].src_uuid, "uuid-1");
+        assert_eq!(edges[0].dst_uuid, "uuid-2");
+    }
+
+    #[test]
+    fn test_get_graph_data() {
+        let (mut db, _temp_dir) = setup_test_db();
+
+        let node1 = Node {
+            uuid: "uuid-1".to_string(),
+            path: "note1.md".to_string(),
+            title: "Note 1".to_string(),
+            content: "Content 1".to_string(),
+            node_type: "note".to_string(),
+            hash: "hash1".to_string(),
+            created_at: 1234567890,
+            updated_at: 1234567890,
+        };
+
+        let node2 = Node {
+            uuid: "uuid-2".to_string(),
+            path: "note2.md".to_string(),
+            title: "Note 2".to_string(),
+            content: "Content 2".to_string(),
+            node_type: "note".to_string(),
+            hash: "hash2".to_string(),
+            created_at: 1234567890,
+            updated_at: 1234567890,
+        };
+
+        db.upsert_node(&node1).unwrap();
+        db.upsert_node(&node2).unwrap();
+
+        let edge = Edge {
+            src_uuid: "uuid-1".to_string(),
+            dst_uuid: "uuid-2".to_string(),
+            relation: "link".to_string(),
+            weight: 1.0,
+            source: "wikilink".to_string(),
+        };
+
+        db.upsert_edge(&edge).unwrap();
+
+        let graph_data = db.get_graph_data().unwrap();
+        assert_eq!(graph_data.nodes.len(), 2);
+        assert_eq!(graph_data.edges.len(), 1);
+    }
+
+    #[test]
+    fn test_search_nodes() {
+        let (mut db, _temp_dir) = setup_test_db();
+
+        let node1 = Node {
+            uuid: "uuid-1".to_string(),
+            path: "rust.md".to_string(),
+            title: "Rust Programming".to_string(),
+            content: "Learn Rust language".to_string(),
+            node_type: "note".to_string(),
+            hash: "hash1".to_string(),
+            created_at: 1234567890,
+            updated_at: 1234567890,
+        };
+
+        let node2 = Node {
+            uuid: "uuid-2".to_string(),
+            path: "python.md".to_string(),
+            title: "Python Programming".to_string(),
+            content: "Learn Python language".to_string(),
+            node_type: "note".to_string(),
+            hash: "hash2".to_string(),
+            created_at: 1234567890,
+            updated_at: 1234567890,
+        };
+
+        db.upsert_node(&node1).unwrap();
+        db.upsert_node(&node2).unwrap();
+
+        let results = db.search_nodes("Rust").unwrap();
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].title, "Rust Programming");
+
+        let results = db.search_nodes("Programming").unwrap();
+        assert_eq!(results.len(), 2);
+
+        let results = db.search_nodes("JavaScript").unwrap();
+        assert_eq!(results.len(), 0);
+    }
+
+    #[test]
+    fn test_clear_all() {
+        let (mut db, _temp_dir) = setup_test_db();
+
+        let node = Node {
+            uuid: "uuid-1".to_string(),
+            path: "test.md".to_string(),
+            title: "Test".to_string(),
+            content: "Content".to_string(),
+            node_type: "note".to_string(),
+            hash: "hash1".to_string(),
+            created_at: 1234567890,
+            updated_at: 1234567890,
+        };
+
+        db.upsert_node(&node).unwrap();
+
+        let edge = Edge {
+            src_uuid: "uuid-1".to_string(),
+            dst_uuid: "uuid-2".to_string(),
+            relation: "link".to_string(),
+            weight: 1.0,
+            source: "wikilink".to_string(),
+        };
+
+        db.upsert_edge(&edge).unwrap();
+
+        db.clear_all().unwrap();
+
+        let nodes = db.get_all_nodes().unwrap();
+        let edges = db.get_all_edges().unwrap();
+        assert_eq!(nodes.len(), 0);
+        assert_eq!(edges.len(), 0);
+    }
+}

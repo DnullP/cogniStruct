@@ -1,28 +1,28 @@
 .search-bar {
   position: relative;
   padding: 12px 16px;
-  background: #252526;
-  border-bottom: 1px solid #3e3e3e;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .search-input {
   width: 100%;
   padding: 8px 12px;
-  background: #3c3c3c;
-  border: 1px solid #5e5e5e;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  color: #d4d4d4;
+  color: var(--text-primary);
   font-size: 13px;
   outline: none;
   transition: border-color 0.2s;
 }
 
 .search-input:focus {
-  border-color: #007acc;
+  border-color: var(--accent-color);
 }
 
 .search-input::placeholder {
-  color: #6a6a6a;
+  color: var(--text-secondary);
 }
 
 .search-spinner {
@@ -38,6 +38,7 @@
   from {
     transform: translateY(-50%) rotate(0deg);
   }
+
   to {
     transform: translateY(-50%) rotate(360deg);
   }

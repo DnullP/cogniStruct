@@ -1,0 +1,144 @@
+/* Main Layout Styles */
+
+/* Card content within sidebars */
+.sidebar-card-content {
+    padding: 8px;
+    height: 100%;
+    overflow: auto;
+}
+
+/* Panel content within center tabs */
+.panel-content {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
+/* Welcome Panel */
+.welcome-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--vscode-editor-background, #1e1e1e);
+}
+
+.welcome-content {
+    text-align: center;
+    padding: 40px;
+}
+
+.welcome-content h1 {
+    font-size: 24px;
+    font-weight: 400;
+    margin-bottom: 16px;
+    color: var(--vscode-editor-foreground, #cccccc);
+}
+
+.welcome-content p {
+    font-size: 14px;
+    color: var(--vscode-descriptionForeground, #8b8b8b);
+    margin-bottom: 24px;
+}
+
+.welcome-content .open-vault-btn {
+    padding: 10px 24px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--vscode-button-background, #0e639c);
+    color: var(--vscode-button-foreground, #ffffff);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.welcome-content .open-vault-btn:hover {
+    background-color: var(--vscode-button-hoverBackground, #1177bb);
+}
+
+/* Outline placeholder */
+.outline-placeholder {
+    padding: 16px;
+    text-align: center;
+    color: var(--vscode-descriptionForeground, #8b8b8b);
+}
+
+.outline-placeholder .hint {
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+/* Activity Bar Items */
+.activity-bar-item {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    background: none;
+    border: none;
+    border-left: 2px solid transparent;
+    color: var(--vscode-activityBar-inactiveForeground, rgba(255, 255, 255, 0.4));
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.activity-bar-item:hover {
+    color: var(--vscode-activityBar-foreground, #ffffff);
+}
+
+.activity-bar-item.active {
+    color: var(--vscode-activityBar-foreground, #ffffff);
+    border-left-color: var(--vscode-activityBar-activeBorder, #ffffff);
+}
+
+.activity-bar-spacer {
+    flex: 1;
+}
+
+/* Header */
+.header-title {
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.header-spacer {
+    flex: 1;
+}
+
+.header-vault-path {
+    font-size: 12px;
+    color: var(--vscode-titleBar-inactiveForeground, rgba(255, 255, 255, 0.6));
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Status Bar */
+.status-item {
+    margin-right: 16px;
+    font-size: 12px;
+}
+
+.status-spacer {
+    flex: 1;
+}
+
+/* Light theme overrides */
+.light .welcome-panel {
+    background-color: var(--vscode-editor-background, #ffffff);
+}
+
+.light .welcome-content h1 {
+    color: var(--vscode-editor-foreground, #333333);
+}
+
+.light .activity-bar-item {
+    color: var(--vscode-activityBar-inactiveForeground, rgba(0, 0, 0, 0.4));
+}
+
+.light .activity-bar-item:hover,
+.light .activity-bar-item.active {
+    color: var(--vscode-activityBar-foreground, #ffffff);
+}

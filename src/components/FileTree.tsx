@@ -16,7 +16,7 @@ function FileTreeItem(props: FileTreeItemProps) {
           <div
             class="file-item"
             classList={{ active: appStore.selectedFile() === props.node.path }}
-            onClick={() => appStore.setSelectedFile(props.node.path)}
+            onClick={() => appStore.openFile(props.node.path)}
           >
             📄 {props.node.name}
           </div>

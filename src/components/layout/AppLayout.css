@@ -1,0 +1,124 @@
+/* App Layout - VS Code Style */
+
+.app-layout {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    background-color: var(--vscode-editor-background, #1e1e1e);
+    color: var(--vscode-editor-foreground, #cccccc);
+    overflow: hidden;
+}
+
+/* Header */
+.app-layout-header {
+    flex-shrink: 0;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    background-color: var(--vscode-titleBar-activeBackground, #3c3c3c);
+    border-bottom: 1px solid var(--vscode-titleBar-border, #3c3c3c);
+    padding: 0 10px;
+    -webkit-app-region: drag;
+}
+
+.app-layout-header * {
+    -webkit-app-region: no-drag;
+}
+
+/* Main content area */
+.app-layout-main {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+/* Activity Bar */
+.app-layout-activity-bar {
+    flex-shrink: 0;
+    width: 48px;
+    background-color: var(--vscode-activityBar-background, #333333);
+    border-right: 1px solid var(--vscode-activityBar-border, #3c3c3c);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 8px;
+}
+
+/* Center content */
+.app-layout-center {
+    flex: 1;
+    min-width: 200px;
+    overflow: visible;
+    position: relative;
+    background-color: var(--vscode-editor-background, #1e1e1e);
+}
+
+/* Resize handles */
+.app-layout-resize-handle {
+    flex-shrink: 0;
+    width: 4px;
+    cursor: ew-resize;
+    background-color: transparent;
+    transition: background-color 0.15s ease;
+    z-index: 10;
+}
+
+.app-layout-resize-handle:hover,
+.app-layout-resize-handle.resizing {
+    background-color: var(--vscode-focusBorder, #007fd4);
+}
+
+.resize-handle-left {
+    margin-left: -2px;
+    margin-right: -2px;
+}
+
+.resize-handle-right {
+    margin-left: -2px;
+    margin-right: -2px;
+}
+
+/* Status Bar */
+.app-layout-status-bar {
+    flex-shrink: 0;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    background-color: var(--vscode-statusBar-background, #007acc);
+    color: var(--vscode-statusBar-foreground, #ffffff);
+    font-size: 12px;
+    padding: 0 10px;
+}
+
+/* Light theme overrides */
+.light .app-layout {
+    background-color: var(--vscode-editor-background, #ffffff);
+    color: var(--vscode-editor-foreground, #333333);
+}
+
+.light .app-layout-header {
+    background-color: var(--vscode-titleBar-activeBackground, #dddddd);
+    border-bottom-color: var(--vscode-titleBar-border, #cccccc);
+}
+
+.light .app-layout-activity-bar {
+    background-color: var(--vscode-activityBar-background, #2c2c2c);
+}
+
+.light .app-layout-center {
+    background-color: var(--vscode-editor-background, #ffffff);
+}
+
+.light .app-layout-status-bar {
+    background-color: var(--vscode-statusBar-background, #007acc);
+}
+
+/* Drag overlay during resize */
+.app-layout.resizing * {
+    pointer-events: none;
+}
+
+.app-layout.resizing .app-layout-resize-handle {
+    pointer-events: auto;
+}
