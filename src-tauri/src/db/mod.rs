@@ -1,41 +1,155 @@
+//! # Database 模块
+//!
+//! 本模块提供基于 CozoDB 的图数据库操作，用于存储和查询知识图谱数据。
+//!
+//! ## 模块依赖
+//!
+//! - `cozo` - CozoDB 嵌入式数据库引擎
+//! - `anyhow` - 错误处理
+//! - `serde` - 序列化/反序列化
+//!
+//! ## 导出的主要内容
+//!
+//! ### 结构体
+//! - [`Database`] - 数据库操作封装
+//! - [`Node`] - 知识节点
+//! - [`Edge`] - 知识节点之间的边（关系）
+//! - [`GraphData`] - 图数据（包含节点和边）
+//!
+//! ## 数据模型
+//!
+//! 本模块实现了一个简单的图数据模型：
+//! - **节点（Node）**：代表一个 Markdown 文件，包含标题、内容、路径等信息
+//! - **边（Edge）**：代表节点之间的关系，如 wikilink 引用或标签关联
+//!
+//! ## 使用示例
+//!
+//! ```rust,ignore
+//! use db::{Database, Node, Edge};
+//!
+//! let mut db = Database::new("path/to/db.db".into())?;
+//!
+//! let node = Node {
+//!     uuid: "uuid-1".to_string(),
+//!     path: "note.md".to_string(),
+//!     // ... 其他字段
+//! };
+//! db.upsert_node(&node)?;
+//!
+//! let graph_data = db.get_graph_data()?;
+//! ```
+
 use anyhow::Result;
 use cozo::{DataValue, DbInstance, ScriptMutability};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
+/// 数据库操作封装
+///
+/// 封装 CozoDB 数据库实例，提供知识图谱的 CRUD 操作。
+///
+/// # 字段说明
+///
+/// * `db` - CozoDB 数据库实例
 pub struct Database {
+    /// CozoDB 数据库实例
     db: DbInstance,
 }
 
+/// 知识节点
+///
+/// 表示知识图谱中的一个节点，通常对应一个 Markdown 文件。
+///
+/// # 字段说明
+///
+/// * `uuid` - 节点的唯一标识符，基于文件路径生成
+/// * `path` - 文件相对于知识库的路径
+/// * `title` - 节点标题（文件名）
+/// * `content` - 文件内容
+/// * `node_type` - 节点类型（如 "note"）
+/// * `hash` - 内容哈希值，用于检测变化
+/// * `created_at` - 创建时间戳（Unix 时间戳）
+/// * `updated_at` - 更新时间戳（Unix 时间戳）
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Node {
+    /// 节点的唯一标识符
     pub uuid: String,
+    /// 文件相对路径
     pub path: String,
+    /// 节点标题
     pub title: String,
+    /// 文件内容
     pub content: String,
+    /// 节点类型
     pub node_type: String,
+    /// 内容哈希值
     pub hash: String,
+    /// 创建时间戳
     pub created_at: i64,
+    /// 更新时间戳
     pub updated_at: i64,
 }
 
+/// 知识边（关系）
+///
+/// 表示知识图谱中两个节点之间的关系。
+///
+/// # 字段说明
+///
+/// * `src_uuid` - 源节点 UUID
+/// * `dst_uuid` - 目标节点 UUID
+/// * `relation` - 关系类型（如 "link"、"tagged"）
+/// * `weight` - 关系权重
+/// * `source` - 关系来源（如 "wikilink"、"tag"）
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Edge {
+    /// 源节点 UUID
     pub src_uuid: String,
+    /// 目标节点 UUID
     pub dst_uuid: String,
+    /// 关系类型
     pub relation: String,
+    /// 关系权重
     pub weight: f64,
+    /// 关系来源
     pub source: String,
 }
 
+/// 图数据
+///
+/// 包含完整的知识图谱数据，包括所有节点和边。
+///
+/// # 字段说明
+///
+/// * `nodes` - 所有知识节点的列表
+/// * `edges` - 所有关系边的列表
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GraphData {
+    /// 知识节点列表
     pub nodes: Vec<Node>,
+    /// 关系边列表
     pub edges: Vec<Edge>,
 }
 
 impl Database {
+    /// 创建新的数据库实例
+    ///
+    /// 初始化 CozoDB 数据库并创建必要的表结构。
+    ///
+    /// # 参数
+    ///
+    /// * `db_path` - 数据库文件路径
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(Database)` - 成功创建的数据库实例
+    /// * `Err(anyhow::Error)` - 创建失败
+    ///
+    /// # 错误情况
+    ///
+    /// * 数据库文件创建失败
+    /// * Schema 初始化失败
     pub fn new(db_path: PathBuf) -> Result<Self> {
         let db = DbInstance::new("sqlite", db_path.to_str().unwrap(), "")
             .map_err(|e| anyhow::anyhow!("{}", e.to_string()))?;
@@ -46,6 +160,9 @@ impl Database {
         Ok(database)
     }
 
+    /// 初始化数据库 Schema
+    ///
+    /// 创建 nodes 和 edges 表，如果表已存在则忽略错误。
     fn init_schema(&mut self) -> Result<()> {
         // Create nodes table - ignore error if already exists
         let _ = self.db.run_script(
@@ -85,6 +202,9 @@ impl Database {
         Ok(())
     }
 
+    /// 将 JSON 转换为 CozoDB 参数映射
+    ///
+    /// 内部辅助函数，将 serde_json::Value 转换为 CozoDB 运行时所需的参数格式。
     fn make_params(json: serde_json::Value) -> BTreeMap<String, DataValue> {
         let mut params = BTreeMap::new();
         if let serde_json::Value::Object(obj) = json {
@@ -109,6 +229,18 @@ impl Database {
         params
     }
 
+    /// 插入或更新节点
+    ///
+    /// 如果节点已存在（根据 UUID）则更新，否则插入新节点。
+    ///
+    /// # 参数
+    ///
+    /// * `node` - 要插入或更新的节点
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(())` - 操作成功
+    /// * `Err(anyhow::Error)` - 数据库操作失败
     pub fn upsert_node(&mut self, node: &Node) -> Result<()> {
         let params = Self::make_params(serde_json::json!({
             "uuid": node.uuid,
@@ -133,6 +265,18 @@ impl Database {
         Ok(())
     }
 
+    /// 插入或更新边
+    ///
+    /// 如果边已存在（根据 src_uuid 和 dst_uuid）则更新，否则插入新边。
+    ///
+    /// # 参数
+    ///
+    /// * `edge` - 要插入或更新的边
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(())` - 操作成功
+    /// * `Err(anyhow::Error)` - 数据库操作失败
     pub fn upsert_edge(&mut self, edge: &Edge) -> Result<()> {
         let params = Self::make_params(serde_json::json!({
             "src_uuid": edge.src_uuid,
@@ -154,6 +298,14 @@ impl Database {
         Ok(())
     }
 
+    /// 获取所有节点
+    ///
+    /// 返回数据库中所有的知识节点。
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(Vec<Node>)` - 所有节点的列表
+    /// * `Err(anyhow::Error)` - 数据库查询失败
     pub fn get_all_nodes(&self) -> Result<Vec<Node>> {
         let result = self.db.run_script(
             "?[uuid, path, title, content, node_type, hash, created_at, updated_at] := *nodes{uuid, path, title, content, node_type, hash, created_at, updated_at}",
@@ -179,6 +331,14 @@ impl Database {
         Ok(nodes)
     }
 
+    /// 获取所有边
+    ///
+    /// 返回数据库中所有的关系边。
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(Vec<Edge>)` - 所有边的列表
+    /// * `Err(anyhow::Error)` - 数据库查询失败
     pub fn get_all_edges(&self) -> Result<Vec<Edge>> {
         let result = self.db.run_script(
             "?[src_uuid, dst_uuid, relation, weight, source] := *edges{src_uuid, dst_uuid, relation, weight, source}",
@@ -201,6 +361,18 @@ impl Database {
         Ok(edges)
     }
 
+    /// 搜索节点
+    ///
+    /// 根据查询字符串在标题和内容中搜索匹配的节点，不区分大小写。
+    ///
+    /// # 参数
+    ///
+    /// * `query` - 搜索关键词
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(Vec<Node>)` - 匹配的节点列表
+    /// * `Err(anyhow::Error)` - 数据库查询失败
     pub fn search_nodes(&self, query: &str) -> Result<Vec<Node>> {
         let query_lower = query.to_lowercase();
         let all_nodes = self.get_all_nodes()?;
@@ -216,6 +388,14 @@ impl Database {
         Ok(filtered_nodes)
     }
 
+    /// 获取完整的图数据
+    ///
+    /// 返回包含所有节点和边的图数据结构。
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(GraphData)` - 包含所有节点和边的图数据
+    /// * `Err(anyhow::Error)` - 数据库查询失败
     pub fn get_graph_data(&self) -> Result<GraphData> {
         let nodes = self.get_all_nodes()?;
         let edges = self.get_all_edges()?;
@@ -223,6 +403,19 @@ impl Database {
         Ok(GraphData { nodes, edges })
     }
 
+    /// 根据路径获取节点
+    ///
+    /// 根据文件路径查找对应的节点。
+    ///
+    /// # 参数
+    ///
+    /// * `path` - 文件相对路径
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(Some(Node))` - 找到匹配的节点
+    /// * `Ok(None)` - 未找到节点
+    /// * `Err(anyhow::Error)` - 数据库查询失败
     pub fn get_node_by_path(&self, path: &str) -> Result<Option<Node>> {
         let params = Self::make_params(serde_json::json!({ "path": path }));
 
@@ -249,6 +442,14 @@ impl Database {
         }
     }
 
+    /// 清空所有数据
+    ///
+    /// 删除数据库中的所有节点和边。
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(())` - 操作成功
+    /// * `Err(anyhow::Error)` - 数据库操作失败
     pub fn clear_all(&mut self) -> Result<()> {
         // Delete all nodes
         let _ = self.db.run_script(
@@ -267,6 +468,18 @@ impl Database {
         Ok(())
     }
 
+    /// 删除节点
+    ///
+    /// 根据 UUID 删除指定的节点。
+    ///
+    /// # 参数
+    ///
+    /// * `uuid` - 要删除的节点 UUID
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(())` - 操作成功
+    /// * `Err(anyhow::Error)` - 数据库操作失败
     pub fn delete_node(&mut self, uuid: &str) -> Result<()> {
         let params = Self::make_params(serde_json::json!({ "uuid": uuid }));
 
@@ -282,6 +495,18 @@ impl Database {
         Ok(())
     }
 
+    /// 删除与节点相关的所有边
+    ///
+    /// 删除所有源节点或目标节点为指定 UUID 的边。
+    ///
+    /// # 参数
+    ///
+    /// * `uuid` - 节点 UUID
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(())` - 操作成功
+    /// * `Err(anyhow::Error)` - 数据库操作失败
     pub fn delete_edges_by_node(&mut self, uuid: &str) -> Result<()> {
         let params = Self::make_params(serde_json::json!({ "uuid": uuid }));
 

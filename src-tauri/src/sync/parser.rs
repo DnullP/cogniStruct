@@ -1,24 +1,90 @@
+//! # Parser 模块
+//!
+//! 本模块提供 Markdown 文件的解析功能，提取结构化信息。
+//!
+//! ## 模块依赖
+//!
+//! - `pulldown_cmark` - Markdown 解析器
+//! - `regex` - 正则表达式匹配
+//!
+//! ## 导出的主要内容
+//!
+//! ### 结构体
+//! - [`ParsedMarkdown`] - 解析后的 Markdown 数据
+//!
+//! ### 函数
+//! - [`parse_markdown`] - 解析 Markdown 内容
+//!
+//! ## 功能说明
+//!
+//! 本模块能够从 Markdown 内容中提取：
+//! - 标题（第一个 heading）
+//! - Wikilinks（`[[link]]` 格式）
+//! - 标签（`#tag` 格式）
+//!
+//! ## 使用示例
+//!
+//! ```rust,ignore
+//! use parser::parse_markdown;
+//!
+//! let content = "# Title\n\nLink to [[Page A]].\n\n#tag1 #tag2";
+//! let parsed = parse_markdown(content);
+//! assert_eq!(parsed.title, "Title");
+//! assert!(parsed.wikilinks.contains(&"Page A".to_string()));
+//! ```
+
 use pulldown_cmark::{Event, Parser, Tag, TagEnd};
 use regex::Regex;
 use std::collections::HashSet;
 
+/// 解析后的 Markdown 数据
+///
+/// 包含从 Markdown 文件中提取的结构化信息。
+///
+/// # 字段说明
+///
+/// * `title` - 文档标题，从第一个 heading 提取
+/// * `content` - 原始 Markdown 内容
+/// * `wikilinks` - 提取的 wikilinks 列表（去重）
+/// * `tags` - 提取的标签列表（去重）
 #[derive(Debug, Clone)]
 pub struct ParsedMarkdown {
+    /// 文档标题
     pub title: String,
+    /// 原始内容
     pub content: String,
+    /// Wikilinks 列表
     pub wikilinks: Vec<String>,
+    /// 标签列表
     pub tags: Vec<String>,
 }
 
+/// 解析 Markdown 内容
+///
+/// 从 Markdown 文本中提取标题、wikilinks 和标签。
+///
+/// # 参数
+///
+/// * `content` - Markdown 文本内容
+///
+/// # 返回值
+///
+/// 返回包含解析结果的 [`ParsedMarkdown`] 结构体
+///
+/// # 解析规则
+///
+/// - **标题**：提取第一个 heading 的文本，如果没有则使用第一行
+/// - **Wikilinks**：匹配 `[[link]]` 或 `[[link|alias]]` 格式
+/// - **标签**：匹配 `#tag` 格式（不包括代码块中的）
 pub fn parse_markdown(content: &str) -> ParsedMarkdown {
     let mut title = String::new();
     let mut wikilinks = HashSet::new();
     let mut tags = HashSet::new();
-    
+
     // Extract title (first heading)
     let parser = Parser::new(content);
     let mut in_heading = false;
-    
+
     for event in parser {
         match event {
             Event::Start(Tag::Heading { level: _, .. }) => {
@@ -36,7 +102,7 @@ pub fn parse_markdown(content: &str) -> ParsedMarkdown {
             _ => {}
         }
     }
-    
+
     // Extract wikilinks [[link]]
     let wikilink_regex = Regex::new(r"\[\[([^\]]+)\]\]").unwrap();
     for cap in wikilink_regex.captures_iter(content) {
@@ -47,7 +113,7 @@ pub fn parse_markdown(content: &str) -> ParsedMarkdown {
             wikilinks.insert(actual_link.trim().to_string());
         }
     }
-    
+
     // Extract tags #tag (but not in code blocks)
     let tag_regex = Regex::new(r"(?:^|[^\w#])#([\w\-_]+)").unwrap();
     for cap in tag_regex.captures_iter(content) {
@@ -55,10 +121,11 @@ pub fn parse_markdown(content: &str) -> ParsedMarkdown {
             tags.insert(tag.as_str().to_string());
         }
     }
-    
+
     // If no title found, try to extract from filename or use first line
     if title.is_empty() {
-        title = content.lines()
+        title = content
+            .lines()
             .next()
             .unwrap_or("Untitled")
             .trim()
@@ -66,7 +133,7 @@ pub fn parse_markdown(content: &str) -> ParsedMarkdown {
             .trim()
             .to_string();
     }
-    
+
     ParsedMarkdown {
         title,
         content: content.to_string(),

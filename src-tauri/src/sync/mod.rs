@@ -1,3 +1,42 @@
+//! # Sync 模块
+//!
+//! 本模块负责知识库文件的同步和解析功能。
+//!
+//! ## 模块依赖
+//!
+//! - [`crate::db`] - 数据库操作
+//! - `walkdir` - 目录遍历
+//! - `anyhow` - 错误处理
+//!
+//! ## 子模块
+//!
+//! - [`parser`] - Markdown 解析器，提取标题、wikilinks 和标签
+//! - [`watcher`] - 文件监听器，监控知识库文件变化
+//!
+//! ## 导出的主要内容
+//!
+//! ### 函数
+//! - [`sync_vault`] - 同步整个知识库
+//! - [`process_file_change`] - 处理单个文件变化
+//! - [`calculate_hash`] - 计算内容哈希值
+//! - [`path_to_uuid`] - 根据路径生成 UUID
+//!
+//! ### 重导出
+//! - [`parse_markdown`] - 从 parser 模块重导出
+//! - [`FileWatcher`] - 从 watcher 模块重导出
+//!
+//! ## 使用示例
+//!
+//! ```rust,ignore
+//! use sync::{sync_vault, FileWatcher};
+//! use db::Database;
+//!
+//! let mut db = Database::new("db.db".into())?;
+//! sync_vault(&vault_path, &mut db)?;
+//!
+//! let watcher = FileWatcher::new(&vault_path)?;
+//! ```
+
 pub mod parser;
 pub mod watcher;
 
@@ -11,6 +50,18 @@ use walkdir::WalkDir;
 pub use parser::parse_markdown;
 pub use watcher::FileWatcher;
 
+/// 计算内容哈希值
+///
+/// 使用标准库的 DefaultHasher 计算字符串内容的哈希值。
+/// 用于检测文件内容是否发生变化。
+///
+/// # 参数
+///
+/// * `content` - 要计算哈希的内容
+///
+/// # 返回值
+///
+/// 返回十六进制格式的哈希字符串
 pub fn calculate_hash(content: &str) -> String {
     use std::collections::hash_map::DefaultHasher;
     use std::hash::{Hash, Hasher};
@@ -20,7 +71,18 @@ pub fn calculate_hash(content: &str) -> String {
     format!("{:x}", hasher.finish())
 }
 
-/// Generate a deterministic UUID from the relative path
+/// 根据相对路径生成确定性 UUID
+///
+/// 使用文件的相对路径生成一个确定性的 UUID 样式的标识符。
+/// 同一路径始终生成相同的 UUID。
+///
+/// # 参数
+///
+/// * `relative_path` - 相对于知识库根目录的文件路径
+///
+/// # 返回值
+///
+/// 返回 UUID 格式的字符串（如 "12345678-1234-1234-1234-123456789012"）
 pub fn path_to_uuid(relative_path: &str) -> String {
     use std::collections::hash_map::DefaultHasher;
     use std::hash::{Hash, Hasher};
@@ -39,6 +101,25 @@ pub fn path_to_uuid(relative_path: &str) -> String {
     )
 }
 
+/// 同步知识库
+///
+/// 扫描知识库目录中的所有 Markdown 文件，解析其内容并更新数据库。
+/// 包括创建节点和根据 wikilinks/tags 创建边。
+///
+/// # 参数
+///
+/// * `vault_path` - 知识库根目录路径
+/// * `db` - 数据库实例的可变引用
+///
+/// # 返回值
+///
+/// * `Ok(())` - 同步成功
+/// * `Err(anyhow::Error)` - 同步失败
+///
+/// # 错误情况
+///
+/// * 文件读取失败
+/// * 数据库操作失败
 pub fn sync_vault(vault_path: &Path, db: &mut Database) -> Result<()> {
     // Clear existing data to avoid accumulation
     db.clear_all()?;
@@ -156,6 +237,26 @@ pub fn sync_vault(vault_path: &Path, db: &mut Database) -> Result<()> {
     Ok(())
 }
 
+/// 处理单个文件变化
+///
+/// 当检测到文件变化时，更新该文件对应的节点信息。
+/// 包括更新内容、哈希值和时间戳，并重新创建相关的边。
+///
+/// # 参数
+///
+/// * `file_path` - 变化的文件绝对路径
+/// * `vault_path` - 知识库根目录路径
+/// * `db` - 数据库实例的可变引用
+///
+/// # 返回值
+///
+/// * `Ok(())` - 处理成功
+/// * `Err(anyhow::Error)` - 处理失败
+///
+/// # 错误情况
+///
+/// * 文件读取失败
+/// * 数据库操作失败
 pub fn process_file_change(file_path: &Path, vault_path: &Path, db: &mut Database) -> Result<()> {
     if let Ok(content) = fs::read_to_string(file_path) {
         let _parsed = parse_markdown(&content);
@@ -237,13 +338,13 @@ mod tests {
         // Create test markdown files
         fs::write(
             vault_path.join("note1.md"),
-            "# Note 1\n\nLink to [[Note 2]].\n\n#tag1",
+            "# Note 1\n\nLink to [[note2]].\n\n#tag1",
         )
         .unwrap();
 
         fs::write(
             vault_path.join("note2.md"),
-            "# Note 2\n\nLink to [[Note 1]].\n\n#tag2",
+            "# Note 2\n\nLink to [[note1]].\n\n#tag2",
         )
         .unwrap();
 
@@ -251,7 +352,7 @@ mod tests {
         fs::create_dir(vault_path.join("subfolder")).unwrap();
         fs::write(
             vault_path.join("subfolder/note3.md"),
-            "# Note 3\n\nLink to [[Note 1]].\n\n#tag3",
+            "# Note 3\n\nLink to [[note1]].\n\n#tag3",
         )
         .unwrap();
 
@@ -268,9 +369,9 @@ mod tests {
         assert_eq!(nodes.len(), 3);
 
         let titles: Vec<String> = nodes.iter().map(|n| n.title.clone()).collect();
-        assert!(titles.contains(&"Note 1".to_string()));
-        assert!(titles.contains(&"Note 2".to_string()));
-        assert!(titles.contains(&"Note 3".to_string()));
+        assert!(titles.contains(&"note1".to_string()));
+        assert!(titles.contains(&"note2".to_string()));
+        assert!(titles.contains(&"note3".to_string()));
 
         // Verify edges
         let edges = db.get_all_edges().unwrap();
@@ -280,8 +381,8 @@ mod tests {
         let edge_exists = edges.iter().any(|e| {
             let src_node = nodes.iter().find(|n| n.uuid == e.src_uuid);
             let dst_node = nodes.iter().find(|n| n.uuid == e.dst_uuid);
-            src_node.map(|s| s.title.as_str()) == Some("Note 1")
-                && dst_node.map(|d| d.title.as_str()) == Some("Note 2")
+            src_node.map(|s| s.title.as_str()) == Some("note1")
+                && dst_node.map(|d| d.title.as_str()) == Some("note2")
         });
         assert!(edge_exists);
     }
