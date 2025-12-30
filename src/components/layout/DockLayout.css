@@ -69,6 +69,15 @@
     --dv-drag-over-border-color: var(--accent-color, #0e639c);
     --dv-drag-over-border: 2px solid var(--accent-color, #0e639c);
     --dv-activegroup-focus-border-color: var(--accent-color, #0e639c);
+
+    /* 
+     * Sash（拖拽调整大小手柄）样式
+     * 使组之间可以通过拖拽来调整大小
+     */
+    --dv-sash-color: transparent;
+    --dv-active-sash-color: var(--accent-color, #0e639c);
+    --dv-active-sash-transition-duration: 0.1s;
+    --dv-active-sash-transition-delay: 0.15s;
 }
 
 /* ==========================================================================
@@ -151,6 +160,48 @@
     --dv-inactivegroup-hiddenpanel-tab-color: var(--text-secondary, #6a6a6a);
     --dv-separator-border: var(--border-color, var(--text-primary));
     --dv-group-view-background-color: var(--bg-primary, #ffffff);
+
+    /* 
+     * Sash（拖拽调整大小手柄）样式 - 亮色主题
+     */
+    --dv-sash-color: transparent;
+    --dv-active-sash-color: var(--accent-color, #0078d4);
+}
+
+/* ==========================================================================
+   Sash 拖拽手柄样式
+   
+   Sash 是 dockview 用于调整组之间大小的拖拽手柄。
+   默认情况下是透明的，悬停/拖拽时显示高亮色。
+   ========================================================================== */
+
+/* 
+ * 增加 sash 的可交互区域
+ * 虽然视觉上是细线，但实际可点击区域更大以便于操作
+ */
+.dockview-container .dv-sash-container .dv-sash {
+    z-index: 99;
+}
+
+/* 水平方向 sash（用于左右调整） */
+.dockview-container .dv-horizontal>.dv-sash-container>.dv-sash {
+    /* 默认显示一条细的分隔线 */
+    background-color: var(--border-color, rgba(128, 128, 128, 0.2));
+    transition: background-color 0.15s ease;
+}
+
+/* 垂直方向 sash（用于上下调整） */
+.dockview-container .dv-vertical>.dv-sash-container>.dv-sash {
+    /* 默认显示一条细的分隔线 */
+    background-color: var(--border-color, rgba(128, 128, 128, 0.2));
+    transition: background-color 0.15s ease;
+}
+
+/* 悬停和拖拽时显示高亮色 */
+.dockview-container .dv-sash-container .dv-sash:not(.disabled):hover,
+.dockview-container .dv-sash-container .dv-sash:not(.disabled):active {
+    background-color: var(--accent-color, #0e639c) !important;
+    transition-delay: 0s;
 }
 
 /* ==========================================================================

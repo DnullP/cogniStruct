@@ -44,6 +44,8 @@ export {
     sidebarToJSON,
     sidebarFromJSON,
     clearSidebar,
+    moveCardToSidebar,
+    getCardPosition,
 } from './Sidebar';
 
 export type {

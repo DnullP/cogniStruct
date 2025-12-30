@@ -135,6 +135,12 @@ const [fileTree, setFileTree] = createSignal<FileNode[]>([]);
 const [searchQuery, setSearchQuery] = createSignal<string>('');
 /** 搜索结果列表 */
 const [searchResults, setSearchResults] = createSignal<Node[]>([]);
+/** 左侧边栏是否可见 */
+const [leftSidebarVisible, setLeftSidebarVisible] = createSignal(true);
+/** 右侧边栏是否可见 */
+const [rightSidebarVisible, setRightSidebarVisible] = createSignal(true);
+/** 文件树中展开的目录路径集合 */
+const [expandedFolders, setExpandedFolders] = createSignal<Set<string>>(new Set());
 
 // ============================================================================
 // 文件打开回调
@@ -216,6 +222,59 @@ export const appStore = {
   searchResults,
   /** 设置搜索结果 */
   setSearchResults,
+
+  // 边栏可见性
+  /** 获取左侧边栏可见性 */
+  leftSidebarVisible,
+  /** 设置左侧边栏可见性 */
+  setLeftSidebarVisible,
+  /** 获取右侧边栏可见性 */
+  rightSidebarVisible,
+  /** 设置右侧边栏可见性 */
+  setRightSidebarVisible,
+  /** 切换左侧边栏可见性 */
+  toggleLeftSidebar: () => setLeftSidebarVisible(!leftSidebarVisible()),
+  /** 切换右侧边栏可见性 */
+  toggleRightSidebar: () => setRightSidebarVisible(!rightSidebarVisible()),
+
+  // 文件树展开状态
+  /** 获取展开的目录路径集合 */
+  expandedFolders,
+  /** 设置展开的目录路径集合 */
+  setExpandedFolders,
+  /** 展开指定目录 */
+  expandFolder: (path: string) => {
+    const folders = new Set(expandedFolders());
+    folders.add(path);
+    setExpandedFolders(folders);
+  },
+  /** 折叠指定目录 */
+  collapseFolder: (path: string) => {
+    const folders = new Set(expandedFolders());
+    folders.delete(path);
+    setExpandedFolders(folders);
+  },
+  /** 切换目录展开状态 */
+  toggleFolder: (path: string) => {
+    const folders = new Set(expandedFolders());
+    if (folders.has(path)) {
+      folders.delete(path);
+    } else {
+      folders.add(path);
+    }
+    setExpandedFolders(folders);
+  },
+  /** 展开到指定文件路径（展开所有父目录） */
+  expandToFile: (filePath: string) => {
+    const folders = new Set(expandedFolders());
+    const parts = filePath.split('/');
+    let currentPath = '';
+    for (let i = 0; i < parts.length - 1; i++) {
+      currentPath = currentPath ? `${currentPath}/${parts[i]}` : parts[i];
+      folders.add(currentPath);
+    }
+    setExpandedFolders(folders);
+  },
 
   // 文件打开 API
   /** 注册文件打开回调 */

@@ -95,6 +95,43 @@
     white-space: nowrap;
 }
 
+/* 卡片操作按钮容器 */
+.sidebar-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+/* 悬停时显示操作按钮 */
+.sidebar-card-header:hover .sidebar-card-actions {
+    opacity: 1;
+}
+
+/* 卡片移动按钮 */
+.sidebar-card-move-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: var(--text-secondary, #9a9a9a);
+    font-size: 10px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* 移动按钮悬停 */
+.sidebar-card-move-btn:hover {
+    background: var(--bg-tertiary, rgba(90, 93, 94, 0.5));
+    color: var(--text-primary, #ffffff);
+}
+
 /* ==========================================================================
    卡片主体样式
    ========================================================================== */
@@ -113,6 +150,45 @@
 .pane-header .codicon-chevron-down,
 .pane-header .codicon-chevron-right {
     margin-right: 4px;
+}
+
+/* ==========================================================================
+   跨边栏拖拽样式
+   ========================================================================== */
+
+/* 可拖拽的卡片头部 */
+.sidebar-card-draggable {
+    cursor: grab;
+}
+
+.sidebar-card-draggable:active {
+    cursor: grabbing;
+}
+
+/* 拖拽手柄提示 */
+.sidebar-card-drag-hint {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    color: var(--text-secondary, #9a9a9a);
+    font-size: 10px;
+    margin-left: auto;
+    padding: 0 4px;
+}
+
+.sidebar-card-header:hover .sidebar-card-drag-hint {
+    opacity: 0.6;
+}
+
+/* 拖拽中的卡片 */
+.sidebar-card-header.dragging {
+    opacity: 0.5;
+}
+
+/* 跨边栏拖拽目标高亮 */
+.sidebar.sidebar-drop-target {
+    outline: 2px dashed var(--vscode-focusBorder, #007fd4);
+    outline-offset: -2px;
+    background-color: rgba(0, 127, 212, 0.1);
 }
 
 /* ==========================================================================
@@ -188,4 +264,37 @@
 .light .sidebar-card-body {
     background-color: var(--vscode-sideBar-background, #f3f3f3);
     color: var(--vscode-sideBar-foreground, #616161);
+}
+
+/* ==========================================================================
+   Sash 拖拽手柄样式
+   
+   Sash 是 Paneview 用于调整卡片之间大小的拖拽手柄。
+   悬停/拖拽时显示高亮色以提供视觉反馈。
+   ========================================================================== */
+
+/* 垂直方向 sash（用于上下调整卡片大小） */
+.sidebar .dv-vertical>.dv-sash-container>.dv-sash {
+    /* 默认显示一条细的分隔线 */
+    background-color: var(--border-color, rgba(128, 128, 128, 0.3));
+    transition: background-color 0.15s ease;
+    height: 4px !important;
+    /* 增加可点击区域 */
+}
+
+/* Sash 悬停和拖拽时高亮 */
+.sidebar .dv-sash-container .dv-sash:not(.disabled):hover,
+.sidebar .dv-sash-container .dv-sash:not(.disabled):active {
+    background-color: var(--accent-color, #0e639c) !important;
+    transition-delay: 0s;
+}
+
+/* 亮色主题 sash 样式 */
+.light .sidebar .dv-vertical>.dv-sash-container>.dv-sash {
+    background-color: var(--border-color, rgba(128, 128, 128, 0.2));
+}
+
+.light .sidebar .dv-sash-container .dv-sash:not(.disabled):hover,
+.light .sidebar .dv-sash-container .dv-sash:not(.disabled):active {
+    background-color: var(--accent-color, #0078d4) !important;
 }

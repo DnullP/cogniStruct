@@ -64,6 +64,10 @@ export interface AppLayoutProps {
     showLeftSidebar?: boolean;
     /** 是否显示右侧边栏 */
     showRightSidebar?: boolean;
+    /** 切换左侧边栏回调 */
+    onToggleLeftSidebar?: () => void;
+    /** 切换右侧边栏回调 */
+    onToggleRightSidebar?: () => void;
     /** 左侧边栏就绪回调 */
     onLeftSidebarReady?: (api: PaneviewComponent) => void;
     /** 右侧边栏就绪回调 */
@@ -184,22 +188,35 @@ export function AppLayout(props: AppLayoutProps) {
                     </div>
                 </Show>
 
-                {/* 左侧边栏 */}
-                <Show when={props.showLeftSidebar !== false && Object.keys(props.cards).length > 0}>
-                    <Sidebar
-                        position="left"
-                        cards={props.cards}
-                        initialLayout={props.leftSidebarLayout}
-                        width={leftWidth()}
-                        onReady={props.onLeftSidebarReady}
-                    />
-                    {/* 左侧调整手柄 */}
-                    <div
-                        class="app-layout-resize-handle resize-handle-left"
-                        classList={{ resizing: isResizingLeft() }}
-                        onMouseDown={startResizeLeft}
-                    />
-                </Show>
+                {/* 左侧边栏区域（包含切换按钮和内容） */}
+                <div class="app-layout-left-sidebar-container">
+                    {/* 左侧边栏头部（含切换按钮） */}
+                    <div class="sidebar-toggle-header left">
+                        <button
+                            class="sidebar-toggle-btn"
+                            title={props.showLeftSidebar ? 'Hide Left Sidebar' : 'Show Left Sidebar'}
+                            onClick={() => props.onToggleLeftSidebar?.()}
+                        >
+                            {props.showLeftSidebar ? '◀' : '▶'}
+                        </button>
+                    </div>
+                    {/* 左侧边栏内容 */}
+                    <Show when={props.showLeftSidebar !== false && Object.keys(props.cards).length > 0}>
+                        <Sidebar
+                            position="left"
+                            cards={props.cards}
+                            initialLayout={props.leftSidebarLayout}
+                            width={leftWidth()}
+                            onReady={props.onLeftSidebarReady}
+                        />
+                        {/* 左侧调整手柄 */}
+                        <div
+                            class="app-layout-resize-handle resize-handle-left"
+                            classList={{ resizing: isResizingLeft() }}
+                            onMouseDown={startResizeLeft}
+                        />
+                    </Show>
+                </div>
 
                 {/* 中央标签页区域 */}
                 <div class="app-layout-center">
@@ -211,22 +228,35 @@ export function AppLayout(props: AppLayoutProps) {
                     />
                 </div>
 
-                {/* 右侧边栏 */}
-                <Show when={props.showRightSidebar && Object.keys(props.cards).length > 0}>
-                    {/* 右侧调整手柄 */}
-                    <div
-                        class="app-layout-resize-handle resize-handle-right"
-                        classList={{ resizing: isResizingRight() }}
-                        onMouseDown={startResizeRight}
-                    />
-                    <Sidebar
-                        position="right"
-                        cards={props.cards}
-                        initialLayout={props.rightSidebarLayout}
-                        width={rightWidth()}
-                        onReady={props.onRightSidebarReady}
-                    />
-                </Show>
+                {/* 右侧边栏区域（包含切换按钮和内容） */}
+                <div class="app-layout-right-sidebar-container">
+                    {/* 右侧边栏内容 */}
+                    <Show when={props.showRightSidebar && Object.keys(props.cards).length > 0}>
+                        {/* 右侧调整手柄 */}
+                        <div
+                            class="app-layout-resize-handle resize-handle-right"
+                            classList={{ resizing: isResizingRight() }}
+                            onMouseDown={startResizeRight}
+                        />
+                        <Sidebar
+                            position="right"
+                            cards={props.cards}
+                            initialLayout={props.rightSidebarLayout}
+                            width={rightWidth()}
+                            onReady={props.onRightSidebarReady}
+                        />
+                    </Show>
+                    {/* 右侧边栏头部（含切换按钮） */}
+                    <div class="sidebar-toggle-header right">
+                        <button
+                            class="sidebar-toggle-btn"
+                            title={props.showRightSidebar ? 'Hide Right Sidebar' : 'Show Right Sidebar'}
+                            onClick={() => props.onToggleRightSidebar?.()}
+                        >
+                            {props.showRightSidebar ? '▶' : '◀'}
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {/* 状态栏 */}

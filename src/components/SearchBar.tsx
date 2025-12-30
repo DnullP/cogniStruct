@@ -2,6 +2,7 @@
  * @fileoverview 搜索栏组件
  *
  * 本模块提供知识库全文搜索功能，调用后端搜索 API 并显示结果。
+ * 支持点击搜索结果打开对应文件。
  *
  * @module components/SearchBar
  *
@@ -15,10 +16,10 @@
  * @exports SearchBar - 搜索栏组件
  */
 
-import { createSignal } from 'solid-js';
+import { createSignal, For, Show } from 'solid-js';
 import { invoke } from '@tauri-apps/api/core';
 import { appStore } from '../stores/appStore';
-/* 样式：SearchBar.css - 搜索输入框和加载状态样式 */
+/* 样式：SearchBar.css - 搜索输入框、结果列表和加载状态样式 */
 import './SearchBar.css';
 
 /**
@@ -26,6 +27,7 @@ import './SearchBar.css';
  *
  * 提供文本输入框，用户输入搜索词后自动调用后端搜索 API。
  * 搜索最少需要 2 个字符才会触发。
+ * 显示搜索结果列表，点击可打开对应文件。
  *
  * @returns 搜索栏 JSX
  */
@@ -64,19 +66,69 @@ export function SearchBar() {
     }
   };
 
+  /**
+   * 处理搜索结果点击
+   *
+   * @param filePath - 要打开的文件路径
+   * @internal
+   */
+  const handleResultClick = (filePath: string) => {
+    appStore.openFile(filePath);
+  };
+
   return (
-    /* search-bar: 搜索栏容器 */
-    <div class="search-bar">
-      {/* search-input: 搜索输入框 */}
-      <input
-        type="text"
-        placeholder="Search notes..."
-        value={appStore.searchQuery()}
-        onInput={(e) => handleSearch(e.currentTarget.value)}
-        class="search-input"
-      />
-      {/* search-spinner: 搜索中加载动画 */}
-      {isSearching() && <div class="search-spinner">🔍</div>}
+    /* search-container: 搜索组件容器 */
+    <div class="search-container">
+      {/* search-bar: 搜索栏容器 */}
+      <div class="search-bar">
+        {/* search-input: 搜索输入框 */}
+        <input
+          type="text"
+          placeholder="Search notes..."
+          value={appStore.searchQuery()}
+          onInput={(e) => handleSearch(e.currentTarget.value)}
+          class="search-input"
+        />
+        {/* search-spinner: 搜索中加载动画 */}
+        <Show when={isSearching()}>
+          <div class="search-spinner">🔍</div>
+        </Show>
+      </div>
+
+      {/* search-results: 搜索结果列表 */}
+      <Show when={appStore.searchResults().length > 0}>
+        <div class="search-results">
+          <div class="search-results-header">
+            Found {appStore.searchResults().length} result(s)
+          </div>
+          <For each={appStore.searchResults()}>
+            {(result) => (
+              /* search-result-item: 单个搜索结果项 */
+              <div
+                class="search-result-item"
+                onClick={() => handleResultClick(result.path)}
+              >
+                {/* search-result-icon: 结果图标 */}
+                <span class="search-result-icon">📄</span>
+                {/* search-result-content: 结果内容 */}
+                <div class="search-result-content">
+                  {/* search-result-title: 结果标题 */}
+                  <div class="search-result-title">{result.title}</div>
+                  {/* search-result-path: 文件路径 */}
+                  <div class="search-result-path">{result.path}</div>
+                </div>
+              </div>
+            )}
+          </For>
+        </div>
+      </Show>
+
+      {/* search-empty: 无结果提示 */}
+      <Show when={appStore.searchQuery().trim().length >= 2 && appStore.searchResults().length === 0 && !isSearching()}>
+        <div class="search-empty">
+          <p>No results found for "{appStore.searchQuery()}"</p>
+        </div>
+      </Show>
     </div>
   );
 }

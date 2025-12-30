@@ -111,15 +111,24 @@
    目录项目样式
    ========================================================================== */
 
+/* .folder-container: 目录容器 */
+.folder-container {
+  display: flex;
+  flex-direction: column;
+}
+
 /* .folder-item: 目录项目
  * - 与文件项目相似的样式
- * - 移除默认的 list-style
+ * - 使用 flexbox 对齐图标和名称
  */
 .folder-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   padding: 6px 12px;
   cursor: pointer;
   font-size: 13px;
-  list-style: none;
+  transition: background 0.2s;
 }
 
 /* .folder-item:hover: 目录悬停状态 */
@@ -127,14 +136,21 @@
   background: var(--bg-hover);
 }
 
-/* details>summary: 隐藏默认的展开/折叠标记 */
-details>summary {
-  list-style: none;
+/* .folder-icon: 目录图标 */
+.folder-icon {
+  flex-shrink: 0;
 }
 
-/* details>summary::-webkit-details-marker: Webkit浏览器专用 */
-details>summary::-webkit-details-marker {
-  display: none;
+/* .folder-name: 目录名称 */
+.folder-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* .folder-children: 子节点容器 */
+.folder-children {
+  /* 子节点不需要额外的缩进，因为已经通过 depth 计算了 padding-left */
 }
 
 /* ==========================================================================

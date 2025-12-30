@@ -110,6 +110,76 @@
 }
 
 /* ==========================================================================
+   侧边栏容器
+   ========================================================================== */
+
+/* .app-layout-left-sidebar-container: 左侧边栏容器
+ * - 包含切换按钮和侧边栏内容
+ */
+.app-layout-left-sidebar-container {
+    display: flex;
+    flex-direction: row;
+}
+
+/* .app-layout-right-sidebar-container: 右侧边栏容器
+ * - 包含侧边栏内容和切换按钮
+ */
+.app-layout-right-sidebar-container {
+    display: flex;
+    flex-direction: row;
+}
+
+/* ==========================================================================
+   侧边栏切换按钮头部
+   ========================================================================== */
+
+/* .sidebar-toggle-header: 侧边栏切换按钮容器
+ * - 固定宽度，仅包含切换按钮
+ * - 垂直居上对齐
+ */
+.sidebar-toggle-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 24px;
+    padding-top: 4px;
+    background-color: var(--vscode-sideBar-background, var(--bg-secondary));
+    border-right: 1px solid var(--vscode-sideBar-border, var(--bg-tertiary));
+}
+
+.sidebar-toggle-header.right {
+    border-right: none;
+    border-left: 1px solid var(--vscode-sideBar-border, var(--bg-tertiary));
+}
+
+/* .sidebar-toggle-btn: 切换按钮
+ * - 简洁的图标按钮
+ */
+.sidebar-toggle-btn {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--vscode-icon-foreground, #c5c5c5);
+    cursor: pointer;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    transition: background-color 0.15s ease;
+}
+
+.sidebar-toggle-btn:hover {
+    background-color: var(--vscode-toolbar-hoverBackground, rgba(90, 93, 94, 0.31));
+}
+
+.sidebar-toggle-btn:active {
+    background-color: var(--vscode-toolbar-activeBackground, rgba(99, 102, 103, 0.41));
+}
+
+/* ==========================================================================
    调整手柄
    ========================================================================== */
 
@@ -194,6 +264,17 @@
 /* .light .app-layout-status-bar: 浅色主题状态栏 */
 .light .app-layout-status-bar {
     background-color: var(--vscode-statusBar-background, #007acc);
+}
+
+/* .light .sidebar-toggle-header: 浅色主题切换按钮头部 */
+.light .sidebar-toggle-header {
+    background-color: var(--vscode-sideBar-background, #f3f3f3);
+    border-color: var(--vscode-sideBar-border, #e7e7e7);
+}
+
+/* .light .sidebar-toggle-btn: 浅色主题切换按钮 */
+.light .sidebar-toggle-btn {
+    color: var(--vscode-icon-foreground, #424242);
 }
 
 /* ==========================================================================

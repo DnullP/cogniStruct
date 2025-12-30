@@ -428,6 +428,9 @@ export function MainLayout() {
                 params: { filePath, fileName },
             });
         }
+
+        /* 展开文件树到对应文件并高亮 */
+        appStore.expandToFile(filePath);
     };
 
     /**
@@ -438,6 +441,30 @@ export function MainLayout() {
      */
     const handleCenterReady = (api: DockviewComponent) => {
         dockviewApi = api;
+
+        /* 监听活动面板变化，同步文件树选中状态 */
+        api.onDidActivePanelChange((panel) => {
+            if (!panel) return;
+
+            /* 从面板 ID 提取文件路径 */
+            const panelId = panel.id;
+            if (panelId.startsWith('editor-')) {
+                /* 尝试从面板参数获取文件路径 */
+                const params = (panel as any).params as { filePath?: string } | undefined;
+                if (params?.filePath) {
+                    /* 更新选中文件并展开文件树 */
+                    appStore.setSelectedFile(params.filePath);
+                    appStore.expandToFile(params.filePath);
+                } else {
+                    /* 尝试从存储的参数映射中获取 */
+                    const storedParams = (window as any).__dockviewPanelParams?.get(panelId) as { filePath?: string } | undefined;
+                    if (storedParams?.filePath) {
+                        appStore.setSelectedFile(storedParams.filePath);
+                        appStore.expandToFile(storedParams.filePath);
+                    }
+                }
+            }
+        });
     };
 
     /* 组件挂载时注册文件打开回调 */
@@ -456,8 +483,10 @@ export function MainLayout() {
                 centerLayout={centerLayout}
                 leftSidebarWidth={250}
                 rightSidebarWidth={200}
-                showLeftSidebar={true}
-                showRightSidebar={false}
+                showLeftSidebar={appStore.leftSidebarVisible()}
+                showRightSidebar={appStore.rightSidebarVisible()}
+                onToggleLeftSidebar={() => appStore.toggleLeftSidebar()}
+                onToggleRightSidebar={() => appStore.toggleRightSidebar()}
                 activityBar={
                     <ActivityBar
                         activeView={activeView}

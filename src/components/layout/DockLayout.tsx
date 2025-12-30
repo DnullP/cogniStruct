@@ -597,8 +597,9 @@ export function DockLayout(props: DockLayoutProps) {
         const dockview = new DockviewComponent(containerRef, dockviewOptions);
 
         /* ========================================
-           调试：日志记录拖放事件
+           调试：日志记录拖放事件（已禁用以避免频繁输出）
            ======================================== */
+        /* 注释掉调试日志以减少控制台输出
         dockview.onWillDragPanel((e) => {
             console.log('[DockLayout] onWillDragPanel:', e);
         });
@@ -617,20 +618,21 @@ export function DockLayout(props: DockLayoutProps) {
         dockview.onDidActivePanelChange((panel) => {
             console.log('[DockLayout] Active panel changed:', panel?.id);
         });
+        */
 
         /* 存储 API 引用 */
         setDockviewApi(dockview);
         setApi(() => dockview);
 
-        /* 调试：监听 document 拖动事件 */
+        /* 调试日志已禁用
         document.addEventListener('dragover', (e) => {
             console.log('[DockLayout] Document dragover:', e.target, 'class:', (e.target as HTMLElement).className);
         }, true);
 
-        /* 调试：监听容器拖动事件 */
         containerRef.addEventListener('dragover', (e) => {
             console.log('[DockLayout] Raw dragover on container:', e.target);
         }, true);
+        */
 
         /* 绑定事件处理器 */
         setupEventHandlers(dockview, props);
@@ -893,6 +895,7 @@ export function addPanel(
         id: panelId,
         component: type, /* 传递给 createComponent 的 options.name */
         title: options?.title || type,
+        params: options?.params, /* 传递 params 到 dockview 面板 */
     };
 
     if (options?.position) {
