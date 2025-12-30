@@ -1,57 +1,116 @@
+/**
+ * @fileoverview 应用布局组件
+ *
+ * 本模块提供 VS Code 风格的应用布局容器，整合侧边栏、中央标签页、
+ * 活动栏、标题栏和状态栏。
+ *
+ * @module components/layout/AppLayout
+ *
+ * @features
+ * - 左右可调整大小的侧边栏
+ * - 中央 dockview 标签页区域
+ * - 活动栏垂直导航
+ * - 标题栏和状态栏
+ *
+ * @example
+ * ```tsx
+ * import { AppLayout } from './layout';
+ *
+ * <AppLayout
+ *   cards={cardComponents}
+ *   panels={panelComponents}
+ *   leftSidebarLayout={sidebarConfig}
+ *   centerLayout={centerConfig}
+ *   header={<Header />}
+ *   statusBar={<StatusBar />}
+ *   activityBar={<ActivityBar />}
+ * />
+ * ```
+ *
+ * @exports AppLayout - 应用布局组件
+ * @exports AppLayoutProps - 布局组件属性类型
+ */
+
 import { JSX, Show, createSignal } from 'solid-js';
 import { Sidebar, SidebarLayoutConfig, CardComponentFactory } from './Sidebar';
 import { DockLayout, InitialLayoutConfig, PanelComponentFactory } from './DockLayout';
 import { DockviewComponent, PaneviewComponent } from 'dockview-core';
+/* 样式：AppLayout.css - 布局网格和调整手柄样式 */
 import './AppLayout.css';
 
-// ============================================================================
-// Types
-// ============================================================================
+/* ==========================================================================
+   类型定义
+   ========================================================================== */
 
+/**
+ * 应用布局组件属性接口
+ */
 export interface AppLayoutProps {
-    /** Card components for sidebars */
+    /** 侧边栏卡片组件映射 */
     cards: Record<string, CardComponentFactory>;
-    /** Panel components for center tabs */
+    /** 中央标签页面板组件映射 */
     panels: Record<string, PanelComponentFactory>;
-    /** Initial left sidebar layout */
+    /** 左侧边栏初始布局配置 */
     leftSidebarLayout?: SidebarLayoutConfig;
-    /** Initial right sidebar layout */
+    /** 右侧边栏初始布局配置 */
     rightSidebarLayout?: SidebarLayoutConfig;
-    /** Initial center tabs layout */
+    /** 中央区域初始布局配置 */
     centerLayout?: InitialLayoutConfig;
-    /** Left sidebar width */
+    /** 左侧边栏宽度 (px) */
     leftSidebarWidth?: number;
-    /** Right sidebar width */
+    /** 右侧边栏宽度 (px) */
     rightSidebarWidth?: number;
-    /** Show left sidebar */
+    /** 是否显示左侧边栏 */
     showLeftSidebar?: boolean;
-    /** Show right sidebar */
+    /** 是否显示右侧边栏 */
     showRightSidebar?: boolean;
-    /** Callback when left sidebar is ready */
+    /** 左侧边栏就绪回调 */
     onLeftSidebarReady?: (api: PaneviewComponent) => void;
-    /** Callback when right sidebar is ready */
+    /** 右侧边栏就绪回调 */
     onRightSidebarReady?: (api: PaneviewComponent) => void;
-    /** Callback when center dockview is ready */
+    /** 中央区域就绪回调 */
     onCenterReady?: (api: DockviewComponent) => void;
-    /** Header content */
+    /** 标题栏内容 */
     header?: JSX.Element;
-    /** Status bar content */
+    /** 状态栏内容 */
     statusBar?: JSX.Element;
-    /** Activity bar (left icon bar) */
+    /** 活动栏内容（左侧图标栏） */
     activityBar?: JSX.Element;
 }
 
-// ============================================================================
-// AppLayout Component
-// ============================================================================
+/* ==========================================================================
+   AppLayout 组件
+   ========================================================================== */
 
+/**
+ * 应用布局组件
+ *
+ * VS Code 风格的应用布局，包含：
+ * - 可选的标题栏
+ * - 活动栏（垂直图标导航）
+ * - 可调整大小的左右侧边栏
+ * - 中央 dockview 标签页区域
+ * - 可选的状态栏
+ *
+ * @param props - 组件属性
+ * @returns 应用布局 JSX
+ */
 export function AppLayout(props: AppLayoutProps) {
+    /** 左侧边栏宽度 */
     const [leftWidth, setLeftWidth] = createSignal(props.leftSidebarWidth ?? 250);
+    /** 右侧边栏宽度 */
     const [rightWidth, setRightWidth] = createSignal(props.rightSidebarWidth ?? 250);
+    /** 是否正在调整左侧边栏大小 */
     const [isResizingLeft, setIsResizingLeft] = createSignal(false);
+    /** 是否正在调整右侧边栏大小 */
     const [isResizingRight, setIsResizingRight] = createSignal(false);
 
-    // Resize handlers
+    /**
+     * 开始调整左侧边栏大小
+     *
+     * @param e - 鼠标事件
+     * @internal
+     */
     const startResizeLeft = (e: MouseEvent) => {
         e.preventDefault();
         setIsResizingLeft(true);
@@ -61,6 +120,7 @@ export function AppLayout(props: AppLayoutProps) {
 
         const onMouseMove = (e: MouseEvent) => {
             const delta = e.clientX - startX;
+            /* 限制宽度在 150-500px 范围内 */
             const newWidth = Math.max(150, Math.min(500, startWidth + delta));
             setLeftWidth(newWidth);
         };
@@ -75,6 +135,12 @@ export function AppLayout(props: AppLayoutProps) {
         document.addEventListener('mouseup', onMouseUp);
     };
 
+    /**
+     * 开始调整右侧边栏大小
+     *
+     * @param e - 鼠标事件
+     * @internal
+     */
     const startResizeRight = (e: MouseEvent) => {
         e.preventDefault();
         setIsResizingRight(true);
@@ -84,6 +150,7 @@ export function AppLayout(props: AppLayoutProps) {
 
         const onMouseMove = (e: MouseEvent) => {
             const delta = startX - e.clientX;
+            /* 限制宽度在 150-500px 范围内 */
             const newWidth = Math.max(150, Math.min(500, startWidth + delta));
             setRightWidth(newWidth);
         };
@@ -99,24 +166,25 @@ export function AppLayout(props: AppLayoutProps) {
     };
 
     return (
+        /* app-layout: 应用布局根容器 */
         <div class="app-layout">
-            {/* Header */}
+            {/* 标题栏 */}
             <Show when={props.header}>
                 <div class="app-layout-header">
                     {props.header}
                 </div>
             </Show>
 
-            {/* Main content area */}
+            {/* 主内容区域 */}
             <div class="app-layout-main">
-                {/* Activity Bar */}
+                {/* 活动栏 */}
                 <Show when={props.activityBar}>
                     <div class="app-layout-activity-bar">
                         {props.activityBar}
                     </div>
                 </Show>
 
-                {/* Left Sidebar */}
+                {/* 左侧边栏 */}
                 <Show when={props.showLeftSidebar !== false && Object.keys(props.cards).length > 0}>
                     <Sidebar
                         position="left"
@@ -125,6 +193,7 @@ export function AppLayout(props: AppLayoutProps) {
                         width={leftWidth()}
                         onReady={props.onLeftSidebarReady}
                     />
+                    {/* 左侧调整手柄 */}
                     <div
                         class="app-layout-resize-handle resize-handle-left"
                         classList={{ resizing: isResizingLeft() }}
@@ -132,7 +201,7 @@ export function AppLayout(props: AppLayoutProps) {
                     />
                 </Show>
 
-                {/* Center - Tab Section */}
+                {/* 中央标签页区域 */}
                 <div class="app-layout-center">
                     <DockLayout
                         panels={props.panels}
@@ -142,8 +211,9 @@ export function AppLayout(props: AppLayoutProps) {
                     />
                 </div>
 
-                {/* Right Sidebar */}
+                {/* 右侧边栏 */}
                 <Show when={props.showRightSidebar && Object.keys(props.cards).length > 0}>
+                    {/* 右侧调整手柄 */}
                     <div
                         class="app-layout-resize-handle resize-handle-right"
                         classList={{ resizing: isResizingRight() }}
@@ -159,7 +229,7 @@ export function AppLayout(props: AppLayoutProps) {
                 </Show>
             </div>
 
-            {/* Status Bar */}
+            {/* 状态栏 */}
             <Show when={props.statusBar}>
                 <div class="app-layout-status-bar">
                     {props.statusBar}
@@ -169,9 +239,9 @@ export function AppLayout(props: AppLayoutProps) {
     );
 }
 
-// ============================================================================
-// Re-exports
-// ============================================================================
+/* ==========================================================================
+   重新导出
+   ========================================================================== */
 
 export { Sidebar } from './Sidebar';
 export { DockLayout } from './DockLayout';

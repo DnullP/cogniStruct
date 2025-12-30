@@ -1,3 +1,29 @@
+/**
+ * @fileoverview 设置面板样式表
+ *
+ * 定义设置面板模态框的样式，包括遮罩层、面板容器、表单控件和按钮。
+ *
+ * @module components/Settings.css
+ *
+ * @style .settings-overlay - 模态遮罩层
+ * @style .settings-panel - 设置面板容器
+ * @style .settings-header - 标题栏
+ * @style .settings-content - 内容区域
+ * @style .settings-section - 设置分区
+ * @style .setting-item - 单个设置项
+ * @style .settings-actions - 操作按钮区
+ */
+
+/* ==========================================================================
+   模态遮罩层
+   ========================================================================== */
+
+/* .settings-overlay: 模态遮罩层
+ * - 固定定位覆盖整个视口
+ * - 半透明黑色背景
+ * - 模糊效果
+ * - flexbox 居中子元素
+ */
 .settings-overlay {
     position: fixed;
     top: 0;
@@ -12,6 +38,16 @@
     backdrop-filter: blur(4px);
 }
 
+/* ==========================================================================
+   设置面板容器
+   ========================================================================== */
+
+/* .settings-panel: 设置面板主容器
+ * - 使用主题背景色
+ * - 圆角边框
+ * - 限制最大宽度和高度
+ * - 投影效果
+ */
 .settings-panel {
     background: var(--bg-primary);
     border-radius: 12px;
@@ -24,6 +60,11 @@
     border: 1px solid var(--border-color);
 }
 
+/* ==========================================================================
+   标题栏
+   ========================================================================== */
+
+/* .settings-header: 标题栏容器 */
 .settings-header {
     display: flex;
     justify-content: space-between;
@@ -32,12 +73,14 @@
     border-bottom: 1px solid var(--border-color);
 }
 
+/* .settings-header h2: 标题文字 */
 .settings-header h2 {
     margin: 0;
     font-size: 20px;
     color: var(--text-primary);
 }
 
+/* .close-btn: 关闭按钮 */
 .close-btn {
     background: none;
     border: none;
@@ -49,21 +92,32 @@
     transition: all 0.2s;
 }
 
+/* .close-btn:hover: 关闭按钮悬停状态 */
 .close-btn:hover {
     background: var(--bg-hover);
     color: var(--text-primary);
 }
 
+/* ==========================================================================
+   内容区域
+   ========================================================================== */
+
+/* .settings-content: 设置内容区域
+ * - flex: 1 填充剩余空间
+ * - 支持垂直滚动
+ */
 .settings-content {
     flex: 1;
     overflow-y: auto;
     padding: 16px 24px;
 }
 
+/* .settings-section: 设置分区 */
 .settings-section {
     margin-bottom: 24px;
 }
 
+/* .settings-section h3: 分区标题 */
 .settings-section h3 {
     font-size: 14px;
     color: var(--text-secondary);
@@ -72,10 +126,16 @@
     border-bottom: 1px solid var(--border-color);
 }
 
+/* ==========================================================================
+   设置项
+   ========================================================================== */
+
+/* .setting-item: 单个设置项容器 */
 .setting-item {
     margin-bottom: 16px;
 }
 
+/* .setting-item label: 设置项标签 */
 .setting-item label {
     display: block;
     font-size: 13px;
@@ -83,6 +143,10 @@
     margin-bottom: 6px;
 }
 
+/* .setting-item input[type="range"]: 范围滑块
+ * - 自定义外观
+ * - 使用主题颜色
+ */
 .setting-item input[type="range"] {
     width: 100%;
     height: 6px;
@@ -93,6 +157,7 @@
     -webkit-appearance: none;
 }
 
+/* .setting-item input[type="range"]::-webkit-slider-thumb: 滑块把手 */
 .setting-item input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 16px;
@@ -103,10 +168,12 @@
     transition: transform 0.2s;
 }
 
+/* .setting-item input[type="range"]::-webkit-slider-thumb:hover: 把手悬停状态 */
 .setting-item input[type="range"]::-webkit-slider-thumb:hover {
     transform: scale(1.1);
 }
 
+/* .setting-item select: 下拉选择框 */
 .setting-item select {
     width: 100%;
     padding: 8px 12px;
@@ -119,15 +186,21 @@
     outline: none;
 }
 
+/* .setting-item select:hover: 下拉框悬停状态 */
 .setting-item select:hover {
     border-color: var(--accent-color);
 }
 
+/* .setting-item select:focus: 下拉框焦点状态 */
 .setting-item select:focus {
     border-color: var(--accent-color);
-    box-shadow: 0 0 0 2px rgba(14, 99, 156, 0.2);
+    box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.2);
 }
 
+/* .setting-item.checkbox label: 复选框标签
+ * - 横向布局
+ * - 可点击
+ */
 .setting-item.checkbox label {
     display: flex;
     align-items: center;
@@ -135,6 +208,7 @@
     cursor: pointer;
 }
 
+/* .setting-item.checkbox input[type="checkbox"]: 复选框 */
 .setting-item.checkbox input[type="checkbox"] {
     width: 18px;
     height: 18px;
@@ -142,12 +216,18 @@
     cursor: pointer;
 }
 
+/* ==========================================================================
+   操作按钮区
+   ========================================================================== */
+
+/* .settings-actions: 操作按钮容器 */
 .settings-actions {
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
 }
 
+/* .reset-btn: 重置按钮 */
 .reset-btn {
     padding: 8px 16px;
     background: var(--bg-secondary);
@@ -159,16 +239,19 @@
     transition: all 0.2s;
 }
 
+/* .reset-btn:hover: 重置按钮悬停状态 */
 .reset-btn:hover {
     background: var(--bg-hover);
     border-color: var(--text-secondary);
 }
 
+/* .reset-btn.danger: 危险操作按钮（红色样式） */
 .reset-btn.danger {
-    border-color: #d73a49;
-    color: #d73a49;
+    border-color: var(--status-error);
+    color: var(--status-error);
 }
 
+/* .reset-btn.danger:hover: 危险按钮悬停状态 */
 .reset-btn.danger:hover {
-    background: rgba(215, 58, 73, 0.1);
+    background: rgba(var(--status-error-rgb), 0.1);
 }

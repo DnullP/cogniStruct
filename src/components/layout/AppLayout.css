@@ -1,60 +1,122 @@
-/* App Layout - VS Code Style */
+/**
+ * @fileoverview 应用布局样式表
+ *
+ * 定义 VS Code 风格的应用布局样式，包括标题栏、活动栏、主内容区、
+ * 调整手柄和状态栏。
+ *
+ * @module components/layout/AppLayout.css
+ *
+ * @style .app-layout - 应用布局根容器
+ * @style .app-layout-header - 标题栏
+ * @style .app-layout-main - 主内容区域
+ * @style .app-layout-activity-bar - 活动栏
+ * @style .app-layout-center - 中央内容区
+ * @style .app-layout-resize-handle - 调整手柄
+ * @style .app-layout-status-bar - 状态栏
+ */
 
+/* ==========================================================================
+   应用布局根容器
+   ========================================================================== */
+
+/* .app-layout: 应用布局根容器
+ * - 垂直 flexbox 布局
+ * - 占满视口
+ * - VS Code 编辑器背景色
+ */
 .app-layout {
     display: flex;
     flex-direction: column;
     width: 100%;
     height: 100vh;
-    background-color: var(--vscode-editor-background, #1e1e1e);
+    background-color: var(--vscode-editor-background, var(--bg-primary));
     color: var(--vscode-editor-foreground, #cccccc);
     overflow: hidden;
 }
 
-/* Header */
+/* ==========================================================================
+   标题栏
+   ========================================================================== */
+
+/* .app-layout-header: 标题栏
+ * - 固定高度 30px
+ * - 支持窗口拖拽
+ * - 深色背景
+ */
 .app-layout-header {
     flex-shrink: 0;
     height: 30px;
     display: flex;
     align-items: center;
-    background-color: var(--vscode-titleBar-activeBackground, #3c3c3c);
-    border-bottom: 1px solid var(--vscode-titleBar-border, #3c3c3c);
+    background-color: var(--vscode-titleBar-activeBackground, var(--bg-tertiary));
+    border-bottom: 1px solid var(--vscode-titleBar-border, var(--bg-tertiary));
     padding: 0 10px;
     -webkit-app-region: drag;
 }
 
+/* .app-layout-header *: 标题栏子元素禁用拖拽 */
 .app-layout-header * {
     -webkit-app-region: no-drag;
 }
 
-/* Main content area */
+/* ==========================================================================
+   主内容区域
+   ========================================================================== */
+
+/* .app-layout-main: 主内容区域
+ * - flex: 1 填充剩余空间
+ * - 水平 flexbox 布局
+ */
 .app-layout-main {
     flex: 1;
     display: flex;
     overflow: hidden;
 }
 
-/* Activity Bar */
+/* ==========================================================================
+   活动栏
+   ========================================================================== */
+
+/* .app-layout-activity-bar: 活动栏
+ * - 固定宽度 48px
+ * - 垂直布局
+ * - 深色背景
+ */
 .app-layout-activity-bar {
     flex-shrink: 0;
     width: 48px;
     background-color: var(--vscode-activityBar-background, #333333);
-    border-right: 1px solid var(--vscode-activityBar-border, #3c3c3c);
+    border-right: 1px solid var(--vscode-activityBar-border, var(--bg-tertiary));
     display: flex;
     flex-direction: column;
     align-items: center;
     padding-top: 8px;
 }
 
-/* Center content */
+/* ==========================================================================
+   中央内容区
+   ========================================================================== */
+
+/* .app-layout-center: 中央内容区
+ * - flex: 1 填充剩余空间
+ * - 最小宽度 200px 防止过度压缩
+ */
 .app-layout-center {
     flex: 1;
     min-width: 200px;
     overflow: visible;
     position: relative;
-    background-color: var(--vscode-editor-background, #1e1e1e);
+    background-color: var(--vscode-editor-background, var(--bg-primary));
 }
 
-/* Resize handles */
+/* ==========================================================================
+   调整手柄
+   ========================================================================== */
+
+/* .app-layout-resize-handle: 侧边栏调整手柄
+ * - 4px 宽度的可拖拽区域
+ * - 悬停时显示高亮
+ */
 .app-layout-resize-handle {
     flex-shrink: 0;
     width: 4px;
@@ -64,22 +126,34 @@
     z-index: 10;
 }
 
+/* .app-layout-resize-handle:hover, .resizing: 悬停和拖拽状态 */
 .app-layout-resize-handle:hover,
 .app-layout-resize-handle.resizing {
     background-color: var(--vscode-focusBorder, #007fd4);
 }
 
+/* .resize-handle-left: 左侧调整手柄
+ * - 负 margin 使手柄覆盖边界
+ */
 .resize-handle-left {
     margin-left: -2px;
     margin-right: -2px;
 }
 
+/* .resize-handle-right: 右侧调整手柄 */
 .resize-handle-right {
     margin-left: -2px;
     margin-right: -2px;
 }
 
-/* Status Bar */
+/* ==========================================================================
+   状态栏
+   ========================================================================== */
+
+/* .app-layout-status-bar: 状态栏
+ * - 固定高度 22px
+ * - 蓝色背景（VS Code 默认）
+ */
 .app-layout-status-bar {
     flex-shrink: 0;
     height: 22px;
@@ -91,34 +165,47 @@
     padding: 0 10px;
 }
 
-/* Light theme overrides */
+/* ==========================================================================
+   浅色主题覆盖
+   ========================================================================== */
+
+/* .light .app-layout: 浅色主题根容器 */
 .light .app-layout {
     background-color: var(--vscode-editor-background, #ffffff);
     color: var(--vscode-editor-foreground, #333333);
 }
 
+/* .light .app-layout-header: 浅色主题标题栏 */
 .light .app-layout-header {
     background-color: var(--vscode-titleBar-activeBackground, #dddddd);
     border-bottom-color: var(--vscode-titleBar-border, #cccccc);
 }
 
+/* .light .app-layout-activity-bar: 浅色主题活动栏 */
 .light .app-layout-activity-bar {
     background-color: var(--vscode-activityBar-background, #2c2c2c);
 }
 
+/* .light .app-layout-center: 浅色主题中央区 */
 .light .app-layout-center {
     background-color: var(--vscode-editor-background, #ffffff);
 }
 
+/* .light .app-layout-status-bar: 浅色主题状态栏 */
 .light .app-layout-status-bar {
     background-color: var(--vscode-statusBar-background, #007acc);
 }
 
-/* Drag overlay during resize */
+/* ==========================================================================
+   调整中状态
+   ========================================================================== */
+
+/* .app-layout.resizing *: 调整大小时禁用子元素指针事件 */
 .app-layout.resizing * {
     pointer-events: none;
 }
 
+/* .app-layout.resizing .app-layout-resize-handle: 调整中手柄保持可交互 */
 .app-layout.resizing .app-layout-resize-handle {
     pointer-events: auto;
 }

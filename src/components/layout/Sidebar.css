@@ -1,52 +1,93 @@
-/* Sidebar Styles */
+/**
+ * @fileoverview 侧边栏样式
+ *
+ * Paneview 可折叠卡片侧边栏的样式定义。
+ * 支持 VS Code 风格的卡片容器、拖放高亮和滚动条。
+ *
+ * @module components/layout/Sidebar/styles
+ *
+ * @sections
+ * - 容器布局：侧边栏主容器和位置变体
+ * - Paneview 覆盖：第三方库样式覆盖
+ * - 卡片头部：折叠标题栏样式
+ * - 卡片主体：内容区域样式
+ * - 拖放指示器：拖拽排序视觉反馈
+ * - 滚动条：自定义滚动条样式
+ * - 亮色主题：Light 模式覆盖
+ */
 
+/* ==========================================================================
+   容器布局
+   ========================================================================== */
+
+/* 侧边栏容器 - 垂直 flex 布局 */
 .sidebar {
     display: flex;
     flex-direction: column;
-    background-color: var(--vscode-sideBar-background, #252526);
-    border-color: var(--vscode-sideBar-border, #3c3c3c);
+    /* 卡片垂直堆叠 */
+    background-color: var(--vscode-sideBar-background, var(--bg-secondary));
+    border-color: var(--vscode-sideBar-border, var(--bg-tertiary));
     height: 100%;
     overflow: hidden;
+    /* 防止内容溢出 */
 }
 
+/* 左侧侧边栏 - 右边框分隔 */
 .sidebar-left {
-    border-right: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+    border-right: 1px solid var(--vscode-sideBar-border, var(--bg-tertiary));
 }
 
+/* 右侧侧边栏 - 左边框分隔 */
 .sidebar-right {
-    border-left: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+    border-left: 1px solid var(--vscode-sideBar-border, var(--bg-tertiary));
 }
 
-/* Paneview overrides for sidebar */
+/* ==========================================================================
+   Paneview 样式覆盖
+   ========================================================================== */
+
+/* Paneview 容器背景透明 - 继承侧边栏背景 */
 .sidebar .paneview {
     background-color: transparent;
 }
 
-/* Card Header Styles */
+/* ==========================================================================
+   卡片头部样式
+   ========================================================================== */
+
+/* 卡片折叠标题栏 */
 .sidebar-card-header {
     display: flex;
     align-items: center;
     gap: 6px;
+    /* 图标和标题间距 */
     padding: 0 10px;
     height: 100%;
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
+    /* 大写标题风格 */
     letter-spacing: 0.5px;
+    /* 增加可读性 */
     color: var(--vscode-sideBarSectionHeader-foreground, #bbbbbb);
     background-color: var(--vscode-sideBarSectionHeader-background, transparent);
     cursor: pointer;
+    /* 可点击折叠 */
     user-select: none;
+    /* 防止选中文字 */
 }
 
+/* 头部悬停高亮 */
 .sidebar-card-header:hover {
     background-color: var(--vscode-list-hoverBackground, rgba(90, 93, 94, 0.31));
 }
 
+/* 卡片图标样式 */
 .sidebar-card-icon {
     font-size: 12px;
 }
 
+/* 卡片标题 - 溢出省略 */
 .sidebar-card-title {
     flex: 1;
     overflow: hidden;
@@ -54,19 +95,31 @@
     white-space: nowrap;
 }
 
-/* Card Body Styles */
+/* ==========================================================================
+   卡片主体样式
+   ========================================================================== */
+
+/* 卡片内容区域 */
 .sidebar-card-body {
-    background-color: var(--vscode-sideBar-background, #252526);
+    background-color: var(--vscode-sideBar-background, var(--bg-secondary));
     color: var(--vscode-sideBar-foreground, #cccccc);
 }
 
-/* Pane collapse/expand chevron */
+/* ==========================================================================
+   折叠图标
+   ========================================================================== */
+
+/* 折叠/展开箭头图标 */
 .pane-header .codicon-chevron-down,
 .pane-header .codicon-chevron-right {
     margin-right: 4px;
 }
 
-/* Drop target highlight */
+/* ==========================================================================
+   拖放指示器
+   ========================================================================== */
+
+/* 拖放目标高亮线 - 通用样式 */
 .sidebar .drop-target-top,
 .sidebar .drop-target-bottom {
     position: absolute;
@@ -74,46 +127,64 @@
     right: 0;
     height: 2px;
     background-color: var(--vscode-focusBorder, #007fd4);
+    /* 焦点蓝色 */
     pointer-events: none;
+    /* 不阻挡鼠标事件 */
     z-index: 100;
+    /* 显示在顶层 */
 }
 
+/* 顶部拖放指示器 */
 .sidebar .drop-target-top {
     top: 0;
 }
 
+/* 底部拖放指示器 */
 .sidebar .drop-target-bottom {
     bottom: 0;
 }
 
-/* Scrollbar styles */
+/* ==========================================================================
+   滚动条样式
+   ========================================================================== */
+
+/* 滚动条尺寸 */
 .sidebar-card-body::-webkit-scrollbar {
     width: 10px;
     height: 10px;
 }
 
+/* 滚动条滑块 */
 .sidebar-card-body::-webkit-scrollbar-thumb {
     background-color: var(--vscode-scrollbarSlider-background, rgba(121, 121, 121, 0.4));
 }
 
+/* 滚动条滑块悬停 */
 .sidebar-card-body::-webkit-scrollbar-thumb:hover {
     background-color: var(--vscode-scrollbarSlider-hoverBackground, rgba(100, 100, 100, 0.7));
 }
 
+/* 滚动条轨道透明 */
 .sidebar-card-body::-webkit-scrollbar-track {
     background-color: transparent;
 }
 
-/* Light theme overrides */
+/* ==========================================================================
+   亮色主题覆盖
+   ========================================================================== */
+
+/* 亮色主题侧边栏 */
 .light .sidebar {
     background-color: var(--vscode-sideBar-background, #f3f3f3);
     border-color: var(--vscode-sideBar-border, #e5e5e5);
 }
 
+/* 亮色主题卡片头部 */
 .light .sidebar-card-header {
     color: var(--vscode-sideBarSectionHeader-foreground, #6f6f6f);
 }
 
+/* 亮色主题卡片主体 */
 .light .sidebar-card-body {
     background-color: var(--vscode-sideBar-background, #f3f3f3);
     color: var(--vscode-sideBar-foreground, #616161);

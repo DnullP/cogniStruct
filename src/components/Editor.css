@@ -1,3 +1,25 @@
+/**
+ * @fileoverview 编辑器样式表
+ *
+ * 定义 Markdown 编辑器组件的视觉样式，包括工具栏、保存按钮和 CodeMirror 样式覆盖。
+ *
+ * @module components/Editor.css
+ *
+ * @style .editor - 编辑器根容器
+ * @style .editor-toolbar - 编辑器工具栏
+ * @style .save-button - 保存按钮
+ * @style .editor-file-path - 文件路径显示
+ * @style .editor-content - CodeMirror 容器
+ */
+
+/* ==========================================================================
+   编辑器容器
+   ========================================================================== */
+
+/* .editor: 编辑器根容器
+ * - 垂直 flexbox 布局
+ * - 占满父容器高度
+ */
 .editor {
   height: 100%;
   display: flex;
@@ -5,6 +27,15 @@
   background: var(--bg-primary);
 }
 
+/* ==========================================================================
+   编辑器工具栏
+   ========================================================================== */
+
+/* .editor-toolbar: 工具栏容器
+ * - 水平 flexbox 布局
+ * - 垂直居中对齐
+ * - 次要背景色
+ */
 .editor-toolbar {
   display: flex;
   align-items: center;
@@ -14,6 +45,11 @@
   border-bottom: 1px solid var(--border-color);
 }
 
+/* .save-button: 保存按钮
+ * - 强调色背景
+ * - 白色文字
+ * - 悬停时变深
+ */
 .save-button {
   padding: 6px 16px;
   background: var(--accent-color);
@@ -25,36 +61,61 @@
   transition: background 0.2s;
 }
 
+/* .save-button:hover:not(:disabled): 悬停状态（非禁用时） */
 .save-button:hover:not(:disabled) {
   background: var(--accent-hover);
 }
 
+/* .save-button:disabled: 禁用状态
+ * - 降低透明度
+ * - 禁止点击光标
+ */
 .save-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
+/* .editor-file-path: 文件路径显示
+ * - flex: 1 填充剩余空间
+ * - 次要文字颜色
+ */
 .editor-file-path {
   font-size: 13px;
   color: var(--text-secondary);
   flex: 1;
 }
 
+/* ==========================================================================
+   CodeMirror 编辑器区域
+   ========================================================================== */
+
+/* .editor-content: CodeMirror 容器
+ * - flex: 1 填充剩余空间
+ * - 支持滚动
+ */
 .editor-content {
   flex: 1;
   overflow: auto;
 }
 
+/* .editor-content .cm-editor: CodeMirror 编辑器
+ * - 占满容器高度
+ * - 使用等宽字体
+ */
 .editor-content .cm-editor {
   height: 100%;
   font-size: 14px;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
 }
 
+/* .editor-content .cm-scroller: CodeMirror 滚动容器 */
 .editor-content .cm-scroller {
   overflow: auto;
 }
 
+/* .editor-content .cm-content: CodeMirror 内容区域
+ * - 添加内边距
+ */
 .editor-content .cm-content {
   padding: 16px;
 }

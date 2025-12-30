@@ -1,0 +1,193 @@
+/**
+ * @fileoverview 统一主题变量定义
+ *
+ * 本文件定义了 CogniStruct 应用的全局主题 CSS 变量。
+ * 支持深色（Abyss）和浅色（Light）两种主题。
+ *
+ * @module styles/theme
+ *
+ * 深色主题（默认）变量集：
+ * - 背景色：#1e1e1e (primary) / #252526 (secondary) / #3c3c3c (tertiary)
+ * - 文本色：#d4d4d4 (primary) / #9a9a9a (secondary)
+ * - 边框色：#3e3e3e
+ * - 强调色：#0e639c (default) / #1177bb (hover)
+ *
+ * 浅色主题变量集：
+ * - 背景色：#ffffff (primary) / #f3f3f3 (secondary) / #e4e4e4 (tertiary)
+ * - 文本色：#1e1e1e (primary) / #6a6a6a (secondary)
+ * - 边框色：#d4d4d4
+ * - 强调色：#0e639c (default) / #1177bb (hover)
+ */
+
+/* ==========================================================================
+   深色主题变量（默认）
+   ========================================================================== */
+
+:root {
+    /* ======== 背景颜色 ======== */
+    /** 主背景色（主要编辑区、主容器） */
+    --bg-primary: #1e1e1e;
+    --bg-primary-rgb: 30, 30, 30;
+    /** 次级背景色（侧边栏、工具栏、面板） */
+    --bg-secondary: #252526;
+    --bg-secondary-rgb: 37, 37, 38;
+    /** 三级背景色（选中状态、高亮背景） */
+    --bg-tertiary: #3c3c3c;
+    --bg-tertiary-rgb: 60, 60, 60;
+    /** 悬停背景色 */
+    --bg-hover: #404040;
+    /** 禁用状态背景色 */
+    --bg-disabled: #2a2a2a;
+
+    /* ======== 文本颜色 ======== */
+    /** 主文本颜色（正常文本） */
+    --text-primary: #d4d4d4;
+    --text-primary-rgb: 212, 212, 212;
+    /** 次级文本颜色（标题、次要信息） */
+    --text-secondary: #9a9a9a;
+    --text-secondary-rgb: 154, 154, 154;
+    /** 三级文本颜色（禁用、最小化文本） */
+    --text-tertiary: #6a6a6a;
+    /** 反色文本（与背景对比） */
+    --text-inverse: #ffffff;
+
+    /* ======== 边框颜色 ======== */
+    /** 主边框颜色（分隔线、边框） */
+    --border-color: #3e3e3e;
+    --border-color-rgb: 62, 62, 62;
+    /** 强调边框（焦点、选中） */
+    --border-accent: #0e639c;
+    /** 危险/错误边框 */
+    --border-danger: #d13438;
+
+    /* ======== 强调色 ======== */
+    /** 主强调色（按钮、链接、焦点） */
+    --accent-color: #0e639c;
+    --accent-color-rgb: 14, 99, 156;
+    /** 强调色悬停状态 */
+    --accent-hover: #1177bb;
+    /** 强调色活动状态 */
+    --accent-active: #004a7c;
+
+    /* ======== 状态颜色 ======== */
+    /** 成功状态（绿色） */
+    --status-success: #4ec9b0;
+    /** 警告状态（橙色） */
+    --status-warning: #ce9178;
+    /** 错误状态（红色） */
+    --status-error: #f48771;
+    --status-error-rgb: 244, 135, 113;
+    /** 信息状态（蓝色） */
+    --status-info: #9cdcfe;
+
+    /* ======== VS Code 兼容变量 ======== */
+    /** 编辑器背景 */
+    --vscode-editor-background: #1e1e1e;
+    /** 编辑器前景色 */
+    --vscode-editor-foreground: #d4d4d4;
+    /** 侧边栏背景 */
+    --vscode-sideBar-background: #252526;
+    /** 侧边栏前景色 */
+    --vscode-sideBar-foreground: #cccccc;
+    /** 侧边栏边框 */
+    --vscode-sideBar-border: #3c3c3c;
+    /** 侧边栏区头前景色 */
+    --vscode-sideBarSectionHeader-foreground: #bbbbbb;
+    /** 侧边栏区头背景 */
+    --vscode-sideBarSectionHeader-background: transparent;
+    /** 活动条背景 */
+    --vscode-activityBar-background: #333333;
+    /** 活动条前景色 */
+    --vscode-activityBar-foreground: #ffffff;
+    /** 标题栏活动背景 */
+    --vscode-titleBar-activeBackground: #3c3c3c;
+    /** 标题栏活动前景色 */
+    --vscode-titleBar-activeForeground: #cccccc;
+    /** 标题栏边框 */
+    --vscode-titleBar-border: #3e3e3e;
+    /** 状态栏背景 */
+    --vscode-statusBar-background: #007acc;
+    /** 状态栏前景色 */
+    --vscode-statusBar-foreground: #ffffff;
+    /** 列表悬停背景 */
+    --vscode-list-hoverBackground: rgba(90, 93, 94, 0.31);
+    /** 焦点边框 */
+    --vscode-focusBorder: #007fd4;
+    /** 滚动条滑块背景 */
+    --vscode-scrollbarSlider-background: rgba(121, 121, 121, 0.4);
+    /** 滚动条滑块悬停背景 */
+    --vscode-scrollbarSlider-hoverBackground: rgba(100, 100, 100, 0.7);
+
+    /* 颜色方案声明 */
+    color-scheme: dark;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+}
+
+/* ==========================================================================
+   浅色主题变量
+   通过 data-theme="light" 属性激活
+   ========================================================================== */
+
+[data-theme="light"] {
+    /* ======== 背景颜色 ======== */
+    --bg-primary: #ffffff;
+    --bg-primary-rgb: 255, 255, 255;
+    --bg-secondary: #f3f3f3;
+    --bg-secondary-rgb: 243, 243, 243;
+    --bg-tertiary: #e4e4e4;
+    --bg-tertiary-rgb: 228, 228, 228;
+    --bg-hover: #d8d8d8;
+    --bg-disabled: #efefef;
+
+    /* ======== 文本颜色 ======== */
+    --text-primary: #1e1e1e;
+    --text-primary-rgb: 30, 30, 30;
+    --text-secondary: #6a6a6a;
+    --text-secondary-rgb: 106, 106, 106;
+    --text-tertiary: #9a9a9a;
+    --text-inverse: #000000;
+
+    /* ======== 边框颜色 ======== */
+    --border-color: #d4d4d4;
+    --border-color-rgb: 212, 212, 212;
+    --border-accent: #0e639c;
+    --border-danger: #d13438;
+
+    /* ======== 强调色 ======== */
+    --accent-color: #0e639c;
+    --accent-color-rgb: 14, 99, 156;
+    --accent-hover: #1177bb;
+    --accent-active: #004a7c;
+
+    /* ======== 状态颜色 ======== */
+    --status-success: #107c10;
+    --status-warning: #ffb900;
+    --status-error: #d13438;
+    --status-error-rgb: 209, 52, 56;
+    --status-info: #0078d4;
+
+    /* ======== VS Code 兼容变量 ======== */
+    --vscode-editor-background: #ffffff;
+    --vscode-editor-foreground: #333333;
+    --vscode-sideBar-background: #f3f3f3;
+    --vscode-sideBar-foreground: #616161;
+    --vscode-sideBar-border: #e5e5e5;
+    --vscode-sideBarSectionHeader-foreground: #6f6f6f;
+    --vscode-sideBarSectionHeader-background: transparent;
+    --vscode-activityBar-background: #2c2c2c;
+    --vscode-activityBar-foreground: #ffffff;
+    --vscode-titleBar-activeBackground: #dddddd;
+    --vscode-titleBar-activeForeground: #000000;
+    --vscode-titleBar-border: #cccccc;
+    --vscode-statusBar-background: #007acc;
+    --vscode-statusBar-foreground: #ffffff;
+    --vscode-list-hoverBackground: rgba(0, 0, 0, 0.05);
+    --vscode-focusBorder: #0e639c;
+    --vscode-scrollbarSlider-background: rgba(100, 100, 100, 0.4);
+    --vscode-scrollbarSlider-hoverBackground: rgba(100, 100, 100, 0.7);
+
+    color-scheme: light;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+}

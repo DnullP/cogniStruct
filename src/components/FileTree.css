@@ -1,3 +1,28 @@
+/**
+ * @fileoverview 文件树样式表
+ *
+ * 定义文件树组件的视觉样式，包括树形结构、文件项目和目录折叠样式。
+ *
+ * @module components/FileTree.css
+ *
+ * @style .file-tree - 文件树根容器，垂直flexbox布局
+ * @style .file-tree-header - 文件树标题区域，固定在顶部
+ * @style .file-tree-content - 文件树内容区域，可滚动
+ * @style .file-tree-item - 单个文件树项目容器
+ * @style .file-item - 文件项目，支持悬停和激活状态
+ * @style .folder-item - 目录项目，支持展开/折叠
+ * @style .empty-state - 空状态提示
+ */
+
+/* ==========================================================================
+   文件树容器
+   ========================================================================== */
+
+/* .file-tree: 文件树根容器
+ * - 使用 flexbox 垂直布局
+ * - 占满父容器高度
+ * - 使用主题背景和文字颜色
+ */
 .file-tree {
   height: 100%;
   display: flex;
@@ -6,27 +31,61 @@
   color: var(--text-primary);
 }
 
+/* ==========================================================================
+   文件树标题区域
+   ========================================================================== */
+
+/* .file-tree-header: 文件树标题区域
+ * - 固定内边距
+ * - 底部边框分隔内容
+ */
 .file-tree-header {
   padding: 12px 16px;
   border-bottom: 1px solid var(--border-color);
 }
 
+/* .file-tree-header h3: 标题文字
+ * - 重置默认 margin
+ * - 14px 字体大小
+ * - 粗体
+ */
 .file-tree-header h3 {
   margin: 0;
   font-size: 14px;
   font-weight: 600;
 }
 
+/* ==========================================================================
+   文件树内容区域
+   ========================================================================== */
+
+/* .file-tree-content: 文件树内容区域
+ * - flex: 1 填充剩余空间
+ * - 支持垂直滚动
+ * - 上下内边距
+ */
 .file-tree-content {
   flex: 1;
   overflow-y: auto;
   padding: 8px 0;
 }
 
+/* .file-tree-item: 单个文件树项目
+ * - 禁用文本选择
+ */
 .file-tree-item {
   user-select: none;
 }
 
+/* ==========================================================================
+   文件项目样式
+   ========================================================================== */
+
+/* .file-item: 文件项目
+ * - 内边距提供点击区域
+ * - 指针光标表示可点击
+ * - 背景过渡动画
+ */
 .file-item {
   padding: 6px 12px;
   cursor: pointer;
@@ -34,15 +93,28 @@
   transition: background 0.2s;
 }
 
+/* .file-item:hover: 文件悬停状态 */
 .file-item:hover {
   background: var(--bg-hover);
 }
 
+/* .file-item.active: 当前选中的文件
+ * - 高亮背景
+ * - 主要文字颜色
+ */
 .file-item.active {
   background: var(--bg-tertiary);
   color: var(--text-primary);
 }
 
+/* ==========================================================================
+   目录项目样式
+   ========================================================================== */
+
+/* .folder-item: 目录项目
+ * - 与文件项目相似的样式
+ * - 移除默认的 list-style
+ */
 .folder-item {
   padding: 6px 12px;
   cursor: pointer;
@@ -50,18 +122,29 @@
   list-style: none;
 }
 
+/* .folder-item:hover: 目录悬停状态 */
 .folder-item:hover {
   background: var(--bg-hover);
 }
 
+/* details>summary: 隐藏默认的展开/折叠标记 */
 details>summary {
   list-style: none;
 }
 
+/* details>summary::-webkit-details-marker: Webkit浏览器专用 */
 details>summary::-webkit-details-marker {
   display: none;
 }
 
+/* ==========================================================================
+   空状态样式
+   ========================================================================== */
+
+/* .empty-state: 空状态提示
+ * - 居中显示
+ * - 次要文字颜色
+ */
 .empty-state {
   padding: 24px;
   text-align: center;

@@ -1,3 +1,24 @@
+/**
+ * @fileoverview 搜索栏样式表
+ *
+ * 定义搜索栏组件的视觉样式，包括输入框、焦点状态和加载动画。
+ *
+ * @module components/SearchBar.css
+ *
+ * @style .search-bar - 搜索栏容器
+ * @style .search-input - 搜索输入框
+ * @style .search-spinner - 搜索加载动画
+ */
+
+/* ==========================================================================
+   搜索栏容器
+   ========================================================================== */
+
+/* .search-bar: 搜索栏容器
+ * - 相对定位，用于放置加载动画
+ * - 次要背景色
+ * - 底部边框分隔
+ */
 .search-bar {
   position: relative;
   padding: 12px 16px;
@@ -5,6 +26,15 @@
   border-bottom: 1px solid var(--border-color);
 }
 
+/* ==========================================================================
+   搜索输入框
+   ========================================================================== */
+
+/* .search-input: 搜索输入框
+ * - 占满容器宽度
+ * - 圆角边框
+ * - 使用主题颜色
+ */
 .search-input {
   width: 100%;
   padding: 8px 12px;
@@ -17,14 +47,29 @@
   transition: border-color 0.2s;
 }
 
+/* .search-input:focus: 输入框焦点状态
+ * - 边框颜色变为强调色
+ */
 .search-input:focus {
   border-color: var(--accent-color);
 }
 
+/* .search-input::placeholder: 占位符文字
+ * - 使用次要文字颜色
+ */
 .search-input::placeholder {
   color: var(--text-secondary);
 }
 
+/* ==========================================================================
+   搜索加载动画
+   ========================================================================== */
+
+/* .search-spinner: 加载动画容器
+ * - 绝对定位在输入框右侧
+ * - 垂直居中
+ * - 旋转动画
+ */
 .search-spinner {
   position: absolute;
   right: 24px;
@@ -34,6 +79,10 @@
   animation: spin 1s linear infinite;
 }
 
+/* @keyframes spin: 旋转动画
+ * - 360度连续旋转
+ * - 保持垂直居中的 transform
+ */
 @keyframes spin {
   from {
     transform: translateY(-50%) rotate(0deg);

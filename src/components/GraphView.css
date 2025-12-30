@@ -1,12 +1,41 @@
+/**
+ * @fileoverview 图谱视图样式表
+ *
+ * 定义知识图谱可视化组件的样式，包括画布容器、信息面板、控制面板和节点标签。
+ *
+ * @module components/GraphView.css
+ *
+ * @style .graph-view - 图谱视图根容器
+ * @style .graph-container - Cosmos 画布容器
+ * @style .graph-info - 节点/边数量信息面板
+ * @style .graph-controls - 滑块控制面板
+ * @style .graph-style-controls - 复选框样式控制
+ * @style .graph-labels - 节点标签容器
+ * @style .node-label - 单个节点标签
+ */
+
+/* ==========================================================================
+   图谱视图容器
+   ========================================================================== */
+
+/* .graph-view: 图谱视图根容器
+ * - 相对定位，用于放置绝对定位的子元素
+ * - 占满父容器
+ * - 隐藏溢出内容
+ */
 .graph-view {
   position: relative;
   height: 100%;
   width: 100%;
   min-height: 400px;
-  background: #1e1e1e;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   overflow: hidden;
 }
 
+/* .graph-container: Cosmos 画布容器
+ * - 绝对定位占满整个视图
+ */
 .graph-container {
   width: 100%;
   height: 100%;
@@ -15,13 +44,24 @@
   left: 0;
 }
 
-/* Cosmos creates a canvas inside the container */
+/* .graph-container canvas: Cosmos 创建的 canvas 元素
+ * - 强制占满容器
+ */
 .graph-container canvas {
   width: 100% !important;
   height: 100% !important;
   display: block;
 }
 
+/* ==========================================================================
+   信息面板
+   ========================================================================== */
+
+/* .graph-info: 节点和边数量信息面板
+ * - 固定在右上角
+ * - 半透明背景
+ * - 禁用指针事件避免干扰图谱交互
+ */
 .graph-info {
   position: absolute;
   top: 16px;
@@ -29,20 +69,29 @@
   display: flex;
   gap: 16px;
   padding: 8px 16px;
-  background: rgba(37, 37, 38, 0.9);
+  background: rgba(var(--bg-secondary-rgb, 37, 37, 38), 0.9);
   border-radius: 4px;
   font-size: 12px;
-  color: #d4d4d4;
+  color: var(--text-primary);
   z-index: 10;
   pointer-events: none;
 }
 
+/* .graph-info span: 信息项目 */
 .graph-info span {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
+/* ==========================================================================
+   样式控制面板
+   ========================================================================== */
+
+/* .graph-style-controls: 复选框样式控制面板
+ * - 固定在信息面板下方
+ * - 垂直布局
+ */
 .graph-style-controls {
   position: absolute;
   top: 56px;
@@ -54,20 +103,22 @@
   background: rgba(37, 37, 38, 0.95);
   border-radius: 6px;
   font-size: 12px;
-  color: #d4d4d4;
+  color: var(--text-primary);
   z-index: 10;
   min-width: 180px;
 }
 
+/* .checkbox-item label: 复选框标签 */
 .checkbox-item label {
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
   font-size: 12px;
-  color: #d4d4d4;
+  color: var(--text-primary);
 }
 
+/* .checkbox-item input[type="checkbox"]: 复选框输入 */
 .checkbox-item input[type="checkbox"] {
   width: 14px;
   height: 14px;
@@ -75,6 +126,14 @@
   cursor: pointer;
 }
 
+/* ==========================================================================
+   滑块控制面板
+   ========================================================================== */
+
+/* .graph-controls: 滑块控制面板
+ * - 固定在左上角
+ * - 垂直布局
+ */
 .graph-controls {
   position: absolute;
   top: 16px;
@@ -86,32 +145,41 @@
   background: rgba(37, 37, 38, 0.95);
   border-radius: 6px;
   font-size: 12px;
-  color: #d4d4d4;
+  color: var(--text-primary);
   z-index: 10;
   min-width: 200px;
 }
 
+/* .control-item: 单个控制项目容器 */
 .control-item {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
+/* .control-item label: 控制项标签 */
 .control-item label {
   font-size: 11px;
   color: #9d9d9d;
 }
 
+/* .control-item input[type="range"]: 范围滑块
+ * - 自定义外观
+ * - 深色背景
+ */
 .control-item input[type="range"] {
   width: 100%;
   height: 4px;
-  background: #3c3c3c;
+  background: var(--bg-tertiary);
   border-radius: 2px;
   outline: none;
   cursor: pointer;
   -webkit-appearance: none;
 }
 
+/* .control-item input[type="range"]::-webkit-slider-thumb: 滑块把手
+ * - 圆形蓝色把手
+ */
 .control-item input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 12px;
@@ -121,10 +189,19 @@
   cursor: pointer;
 }
 
+/* .control-item input[type="range"]::-webkit-slider-thumb:hover: 把手悬停状态 */
 .control-item input[type="range"]::-webkit-slider-thumb:hover {
-  background: #1e90ff;
+  background: var(--accent-hover);
 }
 
+/* ==========================================================================
+   节点标签
+   ========================================================================== */
+
+/* .graph-labels: 节点标签容器
+ * - 绝对定位覆盖整个视图
+ * - 禁用指针事件避免干扰图谱交互
+ */
 .graph-labels {
   position: absolute;
   top: 0;
@@ -135,6 +212,12 @@
   z-index: 5;
 }
 
+/* .node-label: 单个节点标签
+ * - 绝对定位，由 JS 设置位置
+ * - 使用 transform 居中对齐到节点上方
+ * - 半透明深色背景
+ * - 文本溢出省略
+ */
 .node-label {
   position: absolute;
   transform: translate(-50%, -100%);

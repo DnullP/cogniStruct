@@ -1,66 +1,132 @@
+/**
+ * @fileoverview 知识图谱可视化组件
+ *
+ * 本模块提供基于 Cosmos.gl 的交互式图谱可视化功能，用于展示笔记之间的链接关系。
+ *
+ * @module components/GraphView
+ *
+ * @features
+ * - WebGL 高性能渲染
+ * - 力导向图布局
+ * - 节点点击导航到编辑器
+ * - 缩放时显示节点标签
+ * - Mac 触控板手势支持
+ * - 动态节点大小（基于连接度）
+ *
+ * @example
+ * ```tsx
+ * import { GraphView } from './components/GraphView';
+ *
+ * <GraphView />
+ * ```
+ *
+ * @exports GraphView - 图谱可视化组件
+ */
+
 import { createEffect, createSignal, onMount, onCleanup, For } from 'solid-js';
 import { Graph } from '@cosmos.gl/graph';
 import { appStore } from '../stores/appStore';
 import { settingsStore } from '../stores/settingsStore';
+/* 样式：GraphView.css - 图谱容器、控制面板和标签样式 */
 import './GraphView.css';
 import { GraphConfigInterface } from '@cosmos.gl/graph/dist/config';
 
+/**
+ * 标签位置接口
+ *
+ * 用于在图谱上显示节点标签
+ */
 interface LabelPosition {
+  /** 标签的屏幕 X 坐标 */
   x: number;
+  /** 标签的屏幕 Y 坐标 */
   y: number;
+  /** 节点标题文本 */
   title: string;
+  /** 是否可见 */
   visible: boolean;
+  /** 透明度 (0-1) */
   opacity: number;
 }
 
+/**
+ * 图谱可视化组件
+ *
+ * 使用 Cosmos.gl 渲染交互式知识图谱，支持：
+ * - 力导向布局模拟
+ * - 节点拖拽和缩放
+ * - 点击节点跳转到编辑器
+ * - 动态标签显示
+ *
+ * @returns 图谱视图 JSX
+ */
 export function GraphView() {
+  /** 图谱容器 DOM 引用 */
   let containerRef: HTMLDivElement | undefined;
+  /** Cosmos Graph 实例 */
   let graph: Graph | null = null;
 
+  /** 节点标签位置列表 */
   const [labels, setLabels] = createSignal<LabelPosition[]>([]);
 
-  // Zoom threshold for labels to appear (adjust as needed)
-  const LABEL_ZOOM_THRESHOLD = 0.8;  // Labels start appearing at this zoom
-  const LABEL_ZOOM_FULL = 1.5;       // Labels fully visible at this zoom
+  /* 标签可见性阈值
+   * LABEL_ZOOM_THRESHOLD: 标签开始出现的缩放级别
+   * LABEL_ZOOM_FULL: 标签完全可见的缩放级别
+   */
+  const LABEL_ZOOM_THRESHOLD = 0.8;
+  const LABEL_ZOOM_FULL = 1.5;
 
+  /** 节点数据缓存 (uuid -> title 映射) */
   let nodeData: { uuid: string; title: string }[] = [];
+  /** 节点连接度数组 */
   let nodeDegrees: Uint32Array = new Uint32Array(0);
-  // Size scaling parameters:
-  // - LOG_SCALE: controls the maximum growth factor
-  // - DEGREE_THRESHOLD: edges below this have minimal size increase
+
+  /* 节点大小缩放参数
+   * LOG_SCALE: 对数缩放因子，控制最大增长
+   * DEGREE_THRESHOLD: 低于此连接度的节点大小几乎不变
+   */
   const LOG_SCALE = 0.4;
   const DEGREE_THRESHOLD = 5;
 
+  /**
+   * 更新节点标签位置
+   *
+   * 根据当前缩放级别计算标签透明度，并将图谱空间坐标转换为屏幕坐标
+   *
+   * @internal
+   */
   const updateLabels = () => {
     if (!graph || nodeData.length === 0) return;
 
-    // Get current zoom level from graph
+    /* 获取当前缩放级别 */
     const currentZoom = graph.getZoomLevel();
 
-    // Calculate opacity based on zoom level
+    /* 根据缩放级别计算标签透明度 */
     let labelOpacity = 0;
     if (currentZoom >= LABEL_ZOOM_THRESHOLD) {
       if (currentZoom >= LABEL_ZOOM_FULL) {
         labelOpacity = 1;
       } else {
-        // Linear interpolation between threshold and full
+        /* 线性插值计算透明度 */
         labelOpacity = (currentZoom - LABEL_ZOOM_THRESHOLD) / (LABEL_ZOOM_FULL - LABEL_ZOOM_THRESHOLD);
       }
     }
 
-    // Don't update labels if they're not visible (optimization)
+    /* 透明度为 0 时不更新标签（性能优化） */
     if (labelOpacity === 0) {
       setLabels([]);
       return;
     }
 
+    /* 获取采样点位置（避免标签重叠） */
     const sampledPoints = graph.getSampledPointPositionsMap();
 
     const newLabels: LabelPosition[] = [];
 
-    // Show labels for sampled points (visible ones that are not too close)
+    /* 为采样的可见节点创建标签 */
     sampledPoints.forEach((pos, index) => {
       if (index < nodeData.length) {
+        /* 将图谱空间坐标转换为屏幕坐标 */
         const screenPos = graph!.spaceToScreenPosition(pos);
         newLabels.push({
           x: screenPos[0],
@@ -75,27 +141,31 @@ export function GraphView() {
     setLabels(newLabels);
   };
 
+  /**
+   * 组件挂载时初始化 Cosmos 图谱
+   */
   onMount(() => {
     if (!containerRef) return;
 
     const gs = settingsStore.graphSettings();
 
+    /** Cosmos 图谱配置 */
     const graphConfig: GraphConfigInterface = {
-      // Space and background
+      /* 空间和背景设置 */
       spaceSize: 8192,
       backgroundColor: '#2d313a',
 
-      // Rendering quality - higher pixelRatio reduces aliasing on edges
+      /* 渲染质量 - 提高 pixelRatio 减少边缘锯齿 */
       pixelRatio: window.devicePixelRatio * 2,
 
-      // Point styling
+      /* 节点样式 */
       pointDefaultSize: gs.pointSize,
       pointDefaultColor: '#4B5BBF',
       scalePointsOnZoom: true,
       renderHoveredPointRing: true,
       hoveredPointRingColor: '#4B5BBF',
 
-      // Link styling
+      /* 链接样式 */
       linkDefaultWidth: gs.linkWidth,
       linkDefaultColor: '#5F74C2',
       linkDefaultArrows: gs.showArrows,
@@ -103,7 +173,7 @@ export function GraphView() {
       linkGreyoutOpacity: 0,
       curvedLinks: gs.curvedLinks,
 
-      // Physics simulation
+      /* 物理模拟参数 */
       simulationLinkDistance: gs.linkDistance,
       simulationLinkSpring: gs.linkSpring,
       simulationRepulsion: gs.repulsion,
@@ -114,29 +184,29 @@ export function GraphView() {
       simulationRepulsionTheta: gs.repulsionTheta,
       simulationCluster: gs.cluster,
 
-      // Interaction
+      /* 交互设置 */
       enableDrag: true,
-      enableSimulationDuringZoom: true, // Keep simulation running during zoom/pan
+      enableSimulationDuringZoom: true, /* 缩放/平移时保持模拟运行 */
 
-      // View
+      /* 视图设置 */
       fitViewOnInit: true,
       fitViewDelay: 300,
       fitViewPadding: 0.1,
 
-      // Labels
+      /* 标签采样距离 */
       pointSamplingDistance: 60,
 
-      // Attribution
+      /* 归属信息 */
       attribution: '',
 
-      // Callbacks
+      /* 回调函数 */
       onPointClick: (index: number) => {
         if (graph) {
           graph.selectPointByIndex(index);
           graph.zoomToPointByIndex(index);
           console.log('Clicked point index:', index);
 
-          // Navigate to the note in editor
+          /* 导航到编辑器 */
           const graphData = appStore.graphData();
           if (graphData && index < graphData.nodes.length) {
             const node = graphData.nodes[index];
@@ -150,6 +220,7 @@ export function GraphView() {
           graph.unselectPoints();
         }
       },
+      /* 模拟和视图变化时更新标签 */
       onSimulationTick: () => {
         updateLabels();
       },
@@ -173,25 +244,25 @@ export function GraphView() {
 
     graph = new Graph(containerRef, graphConfig);
 
-    // Mac trackpad: make two-finger scroll pan instead of zoom
-    // Pinch-to-zoom sends wheel events with ctrlKey=true (handled by d3-zoom as zoom)
-    // Two-finger scroll sends wheel events without ctrlKey (we convert to pan)
+    /* Mac 触控板支持
+     * 双指滚动发送不带 ctrlKey 的 wheel 事件，转换为平移
+     * 捏合缩放发送带 ctrlKey 的 wheel 事件，由 d3-zoom 处理为缩放
+     */
     const canvas = containerRef.querySelector('canvas');
     if (canvas) {
-      // Access the internal zoom instance (private but accessible at runtime)
+      /* 访问内部 zoom 实例（私有但可访问） */
       const graphAny = graph as any;
       const zoomBehavior = graphAny.zoomInstance?.behavior;
       const canvasSelection = graphAny.canvasD3Selection;
 
       if (zoomBehavior && canvasSelection) {
         canvas.addEventListener('wheel', (e: WheelEvent) => {
-          // Only intercept non-pinch wheel events (two-finger scroll on Mac trackpad)
-          // ctrlKey is true for pinch-to-zoom on Mac
+          /* 仅拦截非捏合的 wheel 事件（Mac 双指滚动） */
           if (!e.ctrlKey) {
             e.preventDefault();
             e.stopPropagation();
 
-            // Get current transform and apply translation
+            /* 获取当前变换并应用平移 */
             const currentTransform = canvasSelection.node().__zoom;
             if (currentTransform) {
               const newTransform = currentTransform.translate(-e.deltaX / currentTransform.k, -e.deltaY / currentTransform.k);
@@ -203,6 +274,9 @@ export function GraphView() {
     }
   });
 
+  /**
+   * 组件卸载时销毁图谱实例
+   */
   onCleanup(() => {
     if (graph) {
       graph.destroy();
@@ -210,13 +284,15 @@ export function GraphView() {
     }
   });
 
-  // React to settings changes
+  /**
+   * 响应设置变化，更新图谱配置
+   */
   createEffect(() => {
     if (!graph) return;
     const gs = settingsStore.graphSettings();
     const graphData = appStore.graphData();
 
-    // Update physics simulation settings
+    /* 更新物理模拟和样式设置 */
     graph.setConfig({
       simulationGravity: gs.gravity,
       simulationLinkDistance: gs.linkDistance,
@@ -234,21 +310,22 @@ export function GraphView() {
       curvedLinks: gs.curvedLinks,
     });
 
-    // Update point sizes with degree-based scaling
+    /* 根据节点连接度更新节点大小 */
     const numNodes = nodeData.length;
     if (numNodes > 0 && nodeDegrees.length === numNodes) {
       const baseSize = gs.pointSize;
       const sizes = new Float32Array(numNodes);
       for (let i = 0; i < numNodes; i++) {
         const degree = nodeDegrees[i];
-        // Formula: size = baseSize * (1 + scale * log(1 + degree/threshold))
-        // Low degree nodes barely grow, high degree nodes grow but plateau
+        /* 公式: size = baseSize * (1 + scale * log(1 + degree/threshold))
+         * 低连接度节点几乎不增长，高连接度节点增长但有上限
+         */
         sizes[i] = baseSize * (1 + LOG_SCALE * Math.log(1 + degree / DEGREE_THRESHOLD));
       }
       graph.setPointSizes(sizes);
     }
 
-    // Update arrows
+    /* 更新箭头显示 */
     if (graphData) {
       const numLinks = graphData.edges.length;
       const arrowsArray = new Array(numLinks).fill(gs.showArrows);
@@ -258,6 +335,9 @@ export function GraphView() {
     graph.restart();
   });
 
+  /**
+   * 响应图谱数据变化，重新渲染图谱
+   */
   createEffect(() => {
     const graphData = appStore.graphData();
     if (!graph || !graphData || graphData.nodes.length === 0) return;
@@ -266,7 +346,7 @@ export function GraphView() {
 
     const numNodes = graphData.nodes.length;
 
-    // Store node data for labels
+    /* 缓存节点数据用于标签显示 */
     nodeData = graphData.nodes.map(node => {
       const filename = node.path.split('/').pop()?.replace('.md', '') || 'Untitled';
       return {
@@ -275,13 +355,13 @@ export function GraphView() {
       };
     });
 
-    // Build UUID to index map
+    /* 构建 UUID -> 索引映射 */
     const uuidToIndex = new Map<string, number>();
     graphData.nodes.forEach((node, i) => {
       uuidToIndex.set(node.uuid, i);
     });
 
-    // Generate initial positions in a circle
+    /* 生成圆形初始布局 */
     const positions = new Float32Array(numNodes * 2);
     const spaceSize = 8192;
     const centerPos = spaceSize / 2;
@@ -295,7 +375,7 @@ export function GraphView() {
       positions[i * 2 + 1] = centerPos + Math.sin(angle) * radius + jitter;
     }
 
-    // Build links as Float32Array of indices
+    /* 构建链接数组 */
     const validLinks: number[] = [];
     graphData.edges.forEach((edge) => {
       const srcIdx = uuidToIndex.get(edge.src_uuid);
@@ -306,7 +386,7 @@ export function GraphView() {
     });
     const links = new Float32Array(validLinks);
 
-    // Calculate node degrees (in + out edges) for size scaling
+    /* 计算节点连接度（入度 + 出度）用于大小缩放 */
     nodeDegrees = new Uint32Array(numNodes);
     graphData.edges.forEach((edge) => {
       const srcIdx = uuidToIndex.get(edge.src_uuid);
@@ -315,9 +395,10 @@ export function GraphView() {
       if (dstIdx !== undefined) nodeDegrees[dstIdx]++;
     });
 
-    // Set point sizes with logarithmic scaling based on degree
-    // Formula: size = baseSize * (1 + scaleFactor * log(1 + degree))
-    // This prevents size explosion while still showing relative importance
+    /* 使用对数缩放设置节点大小
+     * 公式: size = baseSize * (1 + scaleFactor * log(1 + degree))
+     * 防止大小爆炸同时仍显示相对重要性
+     */
     const gs = settingsStore.graphSettings();
     const baseSize = gs.pointSize;
     const sizes = new Float32Array(numNodes);
@@ -326,7 +407,7 @@ export function GraphView() {
       sizes[i] = baseSize * (1 + LOG_SCALE * Math.log(1 + degree / DEGREE_THRESHOLD));
     }
 
-    // Set point colors (RGBA format, values 0-255) - #4B5BBF
+    /* 设置节点颜色 (RGBA 格式, 0-255) - #4B5BBF */
     const colors = new Float32Array(numNodes * 4);
     for (let i = 0; i < numNodes; i++) {
       colors[i * 4] = 75;      // R
@@ -335,7 +416,7 @@ export function GraphView() {
       colors[i * 4 + 3] = 255; // A
     }
 
-    // Set link colors - #5F74C2
+    /* 设置链接颜色 - #5F74C2 */
     const numLinks = validLinks.length / 2;
     const linkColors = new Float32Array(numLinks * 4);
     for (let i = 0; i < numLinks; i++) {
@@ -345,15 +426,15 @@ export function GraphView() {
       linkColors[i * 4 + 3] = 200; // A
     }
 
-    // Set link widths
+    /* 设置链接宽度 */
     const linkWidthsArray = new Float32Array(numLinks).fill(gs.linkWidth);
 
-    // Set link arrows
+    /* 设置链接箭头 */
     const arrowsArray = new Array(numLinks).fill(gs.showArrows);
 
     console.log('Positions:', positions.length / 2, 'Links:', numLinks);
 
-    // Set data - order matters!
+    /* 设置数据 - 顺序很重要！ */
     graph.setPointPositions(positions);
     graph.setPointSizes(sizes);
     graph.setPointColors(colors);
@@ -362,20 +443,24 @@ export function GraphView() {
     graph.setLinkWidths(linkWidthsArray);
     graph.setLinkArrows(arrowsArray);
 
-    // Render and start simulation
+    /* 渲染并启动模拟 */
     graph.zoom(0.9);
     graph.render();
   });
 
   return (
+    /* graph-view: 图谱视图根容器 */
     <div class="graph-view">
+      {/* graph-info: 节点和边数量信息面板 */}
       <div class="graph-info">
         <span>Nodes: {appStore.graphData()?.nodes.length || 0}</span>
         <span>Edges: {appStore.graphData()?.edges.length || 0}</span>
       </div>
 
+      {/* graph-container: Cosmos 图谱挂载点 */}
       <div ref={containerRef} class="graph-container"></div>
 
+      {/* graph-labels: 节点标签容器 */}
       <div class="graph-labels">
         <For each={labels()}>
           {(label) => (

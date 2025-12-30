@@ -1,109 +1,182 @@
-/* Dockview container */
+/**
+ * @fileoverview Dockview 标签页布局样式
+ *
+ * dockview-core 标签页布局系统的自定义主题样式。
+ * 实现 VS Code 风格的暗色/亮色主题和拖放视觉反馈。
+ *
+ * @module components/layout/DockLayout/styles
+ *
+ * @sections
+ * - 容器布局：Dockview 根容器
+ * - 主题变量：Abyss 暗色主题 CSS 变量
+ * - 组高亮：活动组边框样式
+ * - 面板样式：SolidJS 面板内容区域
+ * - 标签样式：自定义标签头部
+ * - 亮色主题：Light 模式覆盖
+ * - 侧边栏样式：隐藏标签头的面板
+ * - 资源管理器样式：侧边栏面板布局
+ */
+
+/* ==========================================================================
+   容器布局
+   ========================================================================== */
+
+/* Dockview 根容器 - 填充父容器 */
 .dockview-container {
     width: 100%;
     height: 100%;
     overflow: visible;
+    /* 允许拖放 overlay 显示 */
     position: relative;
 }
 
-/* Theme variables - Abyss dark theme */
+/* ==========================================================================
+   Abyss 暗色主题变量
+   ========================================================================== */
+
+/* 暗色主题 CSS 变量定义 */
 .dockview-container.dockview-theme-abyss {
-    --dv-background-color: var(--bg-primary, #1e1e1e);
-    --dv-paneview-header-border-color: var(--border-color, #3e3e3e);
-    --dv-tabs-and-actions-container-background-color: var(--bg-secondary, #252526);
-    --dv-activegroup-visiblepanel-tab-background-color: var(--bg-tertiary, #3c3c3c);
-    --dv-activegroup-hiddenpanel-tab-background-color: var(--bg-secondary, #252526);
-    --dv-inactivegroup-visiblepanel-tab-background-color: var(--bg-tertiary, #3c3c3c);
-    --dv-inactivegroup-hiddenpanel-tab-background-color: var(--bg-secondary, #252526);
-    --dv-tab-divider-color: var(--border-color, #3e3e3e);
-    --dv-activegroup-visiblepanel-tab-color: var(--text-primary, #d4d4d4);
+    /* 背景色 */
+    --dv-background-color: var(--bg-primary, var(--bg-primary));
+    --dv-paneview-header-border-color: var(--border-color, var(--border-color));
+    --dv-tabs-and-actions-container-background-color: var(--bg-secondary, var(--bg-secondary));
+
+    /* 活动组标签背景 */
+    --dv-activegroup-visiblepanel-tab-background-color: var(--bg-tertiary, var(--bg-tertiary));
+    --dv-activegroup-hiddenpanel-tab-background-color: var(--bg-secondary, var(--bg-secondary));
+
+    /* 非活动组标签背景 */
+    --dv-inactivegroup-visiblepanel-tab-background-color: var(--bg-tertiary, var(--bg-tertiary));
+    --dv-inactivegroup-hiddenpanel-tab-background-color: var(--bg-secondary, var(--bg-secondary));
+
+    /* 标签分隔线 */
+    --dv-tab-divider-color: var(--border-color, var(--border-color));
+
+    /* 活动组标签文字 */
+    --dv-activegroup-visiblepanel-tab-color: var(--text-primary, var(--text-primary));
     --dv-activegroup-hiddenpanel-tab-color: var(--text-secondary, #9a9a9a);
-    --dv-inactivegroup-visiblepanel-tab-color: var(--text-primary, #d4d4d4);
+
+    /* 非活动组标签文字 */
+    --dv-inactivegroup-visiblepanel-tab-color: var(--text-primary, var(--text-primary));
     --dv-inactivegroup-hiddenpanel-tab-color: var(--text-secondary, #9a9a9a);
-    --dv-separator-border: var(--border-color, #3e3e3e);
-    --dv-group-view-background-color: var(--bg-primary, #1e1e1e);
-    /* Drop overlay - IMPORTANT: must have visible values for drag & drop to work */
+
+    /* 分隔线和组视图背景 */
+    --dv-separator-border: var(--border-color, var(--border-color));
+    --dv-group-view-background-color: var(--bg-primary, var(--bg-primary));
+
+    /* 拖放叠加层 - 重要：必须可见以支持拖放功能 */
     --dv-drag-over-background-color: rgba(14, 99, 156, 0.3);
     --dv-drag-over-border-color: var(--accent-color, #0e639c);
     --dv-drag-over-border: 2px solid var(--accent-color, #0e639c);
     --dv-activegroup-focus-border-color: var(--accent-color, #0e639c);
 }
 
-/* Active group highlight */
+/* ==========================================================================
+   组高亮样式
+   ========================================================================== */
+
+/* 活动组边框高亮 */
 .dockview-container .groupview.active-group {
     outline: 1px solid var(--accent-color, #0e639c);
     outline-offset: -1px;
 }
 
+/* 非活动组边框（透明） */
 .dockview-container .groupview:not(.active-group) {
     outline: 1px solid transparent;
     outline-offset: -1px;
     transition: outline-color 0.15s ease;
+    /* 平滑过渡 */
 }
 
+/* 悬停时显示边框 */
 .dockview-container .groupview:hover:not(.active-group) {
-    outline-color: var(--border-color, #3e3e3e);
+    outline-color: var(--border-color, var(--border-color));
 }
 
-/* SolidJS Panel content */
+/* ==========================================================================
+   SolidJS 面板样式
+   ========================================================================== */
+
+/* 面板内容区域 */
 .dockview-solid-panel {
-    background-color: var(--bg-primary, #1e1e1e);
-    color: var(--text-primary, #d4d4d4);
+    background-color: var(--bg-primary, var(--bg-primary));
+    color: var(--text-primary, var(--text-primary));
 }
 
-/* Custom tab styling */
+/* ==========================================================================
+   自定义标签样式
+   ========================================================================== */
+
+/* 标签容器 */
 .dockview-solid-tab {
     display: flex;
     align-items: center;
     gap: 6px;
+    /* 图标和标题间距 */
     padding: 0 8px;
     height: 100%;
     font-size: 13px;
     white-space: nowrap;
 }
 
+/* 标签图标 */
 .dockview-solid-tab .tab-icon {
     font-size: 14px;
 }
 
+/* 标签标题 - 溢出省略 */
 .dockview-solid-tab .tab-title {
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-/* Light theme overrides */
+/* ==========================================================================
+   亮色主题覆盖
+   ========================================================================== */
+
+/* 亮色主题 CSS 变量覆盖 */
 [data-theme="light"] .dockview-container.dockview-theme-abyss {
     --dv-background-color: var(--bg-primary, #ffffff);
-    --dv-paneview-header-border-color: var(--border-color, #d4d4d4);
+    --dv-paneview-header-border-color: var(--border-color, var(--text-primary));
     --dv-tabs-and-actions-container-background-color: var(--bg-secondary, #f3f3f3);
     --dv-activegroup-visiblepanel-tab-background-color: var(--bg-tertiary, #e4e4e4);
     --dv-activegroup-hiddenpanel-tab-background-color: var(--bg-secondary, #f3f3f3);
     --dv-inactivegroup-visiblepanel-tab-background-color: var(--bg-tertiary, #e4e4e4);
     --dv-inactivegroup-hiddenpanel-tab-background-color: var(--bg-secondary, #f3f3f3);
-    --dv-tab-divider-color: var(--border-color, #d4d4d4);
-    --dv-activegroup-visiblepanel-tab-color: var(--text-primary, #1e1e1e);
+    --dv-tab-divider-color: var(--border-color, var(--text-primary));
+    --dv-activegroup-visiblepanel-tab-color: var(--text-primary, var(--bg-primary));
     --dv-activegroup-hiddenpanel-tab-color: var(--text-secondary, #6a6a6a);
-    --dv-inactivegroup-visiblepanel-tab-color: var(--text-primary, #1e1e1e);
+    --dv-inactivegroup-visiblepanel-tab-color: var(--text-primary, var(--bg-primary));
     --dv-inactivegroup-hiddenpanel-tab-color: var(--text-secondary, #6a6a6a);
-    --dv-separator-border: var(--border-color, #d4d4d4);
+    --dv-separator-border: var(--border-color, var(--text-primary));
     --dv-group-view-background-color: var(--bg-primary, #ffffff);
 }
 
-/* Sidebar style panel (hidden header) */
+/* ==========================================================================
+   侧边栏样式面板（隐藏标签头）
+   ========================================================================== */
+
+/* 隐藏侧边栏组的标签栏 */
 .dockview-container .groupview.sidebar-group .tabs-and-actions-container {
     display: none;
 }
 
-/* Explorer/Sidebar panel styles */
+/* ==========================================================================
+   资源管理器/侧边栏面板样式
+   ========================================================================== */
+
+/* 资源管理器面板容器 */
 .explorer-panel,
 .sidebar-panel {
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: var(--bg-secondary, #252526);
+    background: var(--bg-secondary, var(--bg-secondary));
     overflow: hidden;
 }
 
+/* 侧边栏头部 */
 .sidebar-header {
     display: flex;
     align-items: center;
@@ -111,17 +184,21 @@
     height: 35px;
     padding: 0 16px;
     flex-shrink: 0;
-    border-bottom: 1px solid var(--border-color, #3e3e3e);
+    /* 防止压缩 */
+    border-bottom: 1px solid var(--border-color, var(--border-color));
 }
 
+/* 侧边栏标题 */
 .sidebar-title {
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.5px;
     color: var(--text-secondary, #9a9a9a);
     text-transform: uppercase;
+    /* 大写风格 */
 }
 
+/* 侧边栏内容区域 */
 .sidebar-content {
     flex: 1;
     overflow-y: auto;

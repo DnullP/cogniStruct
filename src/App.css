@@ -1,52 +1,30 @@
-:root {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans',
-    'Droid Sans', 'Helvetica Neue', sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/**
+ * App.css - 全局样式和布局
+ *
+ * 本样式文件定义了应用程序的全局样式，包括：
+ * - 导入统一主题变量（styles/theme.css）
+ * - 全局重置样式
+ * - 布局基础样式
+ * - 滚动条和焦点样式
+ *
+ * 对应组件：App.tsx
+ */
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* 导入统一主题变量 */
+@import './styles/theme.css';
 
-  /* Dark theme (default) */
-  --bg-primary: #1e1e1e;
-  --bg-secondary: #252526;
-  --bg-tertiary: #3c3c3c;
-  --bg-hover: #404040;
-  --text-primary: #d4d4d4;
-  --text-secondary: #9a9a9a;
-  --border-color: #3e3e3e;
-  --accent-color: #0e639c;
-  --accent-hover: #1177bb;
+/* ============================================================================
+ * 全局重置样式
+ * ============================================================================ */
 
-  color-scheme: dark;
-  color: var(--text-primary);
-  background-color: var(--bg-primary);
-}
-
-[data-theme="light"] {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f3f3f3;
-  --bg-tertiary: #e4e4e4;
-  --bg-hover: #d8d8d8;
-  --text-primary: #1e1e1e;
-  --text-secondary: #6a6a6a;
-  --border-color: #d4d4d4;
-  --accent-color: #0e639c;
-  --accent-hover: #1177bb;
-
-  color-scheme: light;
-  color: var(--text-primary);
-  background-color: var(--bg-primary);
-}
-
+/* 重置所有元素的 margin、padding，使用 border-box 盒模型 */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/* body 元素样式 - 全屏布局 */
 body {
   margin: 0;
   display: flex;
@@ -54,17 +32,28 @@ body {
   min-height: 100vh;
 }
 
+/* 根容器样式 - 占满整个视口 */
 #root {
   width: 100%;
   height: 100vh;
 }
 
+/* ============================================================================
+ * 主应用布局样式
+ * ============================================================================ */
+
+/* 应用容器 - flex 横向布局 */
 .app {
   display: flex;
   height: 100vh;
   overflow: hidden;
 }
 
+/* ============================================================================
+ * 侧边栏样式（旧版，保留兼容）
+ * ============================================================================ */
+
+/* 侧边栏容器 - 固定宽度，纵向flex布局 */
 .sidebar {
   width: 300px;
   display: flex;
@@ -73,17 +62,20 @@ body {
   border-right: 1px solid var(--border-color);
 }
 
+/* 侧边栏头部 - 包含标题和操作按钮 */
 .sidebar-header {
   padding: 16px;
   border-bottom: 1px solid var(--border-color);
 }
 
+/* 侧边栏标题 */
 .sidebar-header h2 {
   margin: 0 0 12px 0;
   font-size: 18px;
   color: var(--text-primary);
 }
 
+/* 打开知识库按钮 - 主操作按钮样式 */
 .open-vault-btn {
   width: 100%;
   padding: 8px 16px;
@@ -96,10 +88,16 @@ body {
   transition: background 0.2s;
 }
 
+/* 打开知识库按钮悬停状态 */
 .open-vault-btn:hover {
   background: var(--accent-hover);
 }
 
+/* ============================================================================
+ * 主内容区域样式
+ * ============================================================================ */
+
+/* 主内容容器 - 填充剩余空间 */
 .main-content {
   flex: 1;
   display: flex;
@@ -107,11 +105,17 @@ body {
   overflow: hidden;
 }
 
+/* 主内容最后一个子元素填充剩余空间 */
 .main-content> :last-child {
   flex: 1;
   min-height: 0;
 }
 
+/* ============================================================================
+ * 工具栏样式
+ * ============================================================================ */
+
+/* 视图工具栏 - 包含视图切换和设置按钮 */
 .view-toolbar {
   padding: 12px 16px;
   background: var(--bg-secondary);
@@ -120,6 +124,7 @@ body {
   gap: 12px;
 }
 
+/* 工具栏按钮基础样式 */
 .view-toggle-btn,
 .settings-btn {
   padding: 6px 16px;
@@ -132,16 +137,23 @@ body {
   transition: all 0.2s;
 }
 
+/* 工具栏按钮悬停状态 */
 .view-toggle-btn:hover,
 .settings-btn:hover {
   background: var(--bg-hover);
   border-color: var(--text-secondary);
 }
 
+/* 设置按钮 - 右对齐 */
 .settings-btn {
   margin-left: auto;
 }
 
+/* ============================================================================
+ * 欢迎页面样式
+ * ============================================================================ */
+
+/* 欢迎容器 - 居中显示 */
 .welcome {
   display: flex;
   align-items: center;

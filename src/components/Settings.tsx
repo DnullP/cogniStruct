@@ -1,21 +1,81 @@
+/**
+ * @fileoverview 设置面板组件
+ *
+ * 本模块提供应用设置的用户界面，包括主题切换和图谱物理/样式参数调整。
+ *
+ * @module components/Settings
+ *
+ * @features
+ * - 主题切换（深色/浅色）
+ * - 图谱物理参数调整（引力、斥力、弹力等）
+ * - 图谱样式调整（节点大小、边宽度、箭头等）
+ * - 设置重置功能
+ *
+ * @example
+ * ```tsx
+ * import { Settings } from './components/Settings';
+ *
+ * // 组件根据 settingsStore.settingsOpen() 状态自动显示/隐藏
+ * <Settings />
+ * ```
+ *
+ * @exports Settings - 设置面板组件
+ */
+
 import { Show } from 'solid-js';
 import { settingsStore } from '../stores/settingsStore';
+/* 样式：Settings.css - 设置面板模态框和表单控件样式 */
 import './Settings.css';
 
+/**
+ * 设置面板组件
+ *
+ * 模态对话框形式的设置界面，包含：
+ * - 主题设置
+ * - 图谱物理模拟参数
+ * - 图谱视觉样式参数
+ * - 重置按钮
+ *
+ * @returns 设置面板 JSX（当 settingsOpen 为 true 时显示）
+ */
 export function Settings() {
+    /**
+     * 处理主题切换
+     *
+     * @param e - 下拉框变更事件
+     * @internal
+     */
     const handleThemeChange = (e: Event) => {
         const value = (e.target as HTMLSelectElement).value as 'light' | 'dark';
         settingsStore.setTheme(value);
     };
 
+    /**
+     * 处理图谱设置变更
+     *
+     * @param key - 设置键名
+     * @param value - 新值
+     * @internal
+     */
     const handleGraphChange = (key: string, value: number | boolean) => {
         settingsStore.setGraphSettings({ [key]: value });
     };
 
+    /**
+     * 关闭设置面板
+     *
+     * @internal
+     */
     const handleClose = () => {
         settingsStore.setSettingsOpen(false);
     };
 
+    /**
+     * 处理遮罩层点击（点击遮罩关闭面板）
+     *
+     * @param e - 点击事件
+     * @internal
+     */
     const handleOverlayClick = (e: MouseEvent) => {
         if (e.target === e.currentTarget) {
             handleClose();
@@ -24,15 +84,19 @@ export function Settings() {
 
     return (
         <Show when={settingsStore.settingsOpen()}>
+            {/* settings-overlay: 模态遮罩层，点击可关闭 */}
             <div class="settings-overlay" onClick={handleOverlayClick}>
+                {/* settings-panel: 设置面板容器 */}
                 <div class="settings-panel">
+                    {/* settings-header: 标题栏和关闭按钮 */}
                     <div class="settings-header">
                         <h2>⚙️ 设置 Settings</h2>
                         <button class="close-btn" onClick={handleClose}>✕</button>
                     </div>
 
+                    {/* settings-content: 设置内容区域 */}
                     <div class="settings-content">
-                        {/* Theme Section */}
+                        {/* 主题设置区 */}
                         <section class="settings-section">
                             <h3>🎨 主题 Theme</h3>
                             <div class="setting-item">
@@ -44,7 +108,7 @@ export function Settings() {
                             </div>
                         </section>
 
-                        {/* Graph Physics Section */}
+                        {/* 图谱物理模拟参数区 */}
                         <section class="settings-section">
                             <h3>⚡ 物理模拟 Physics</h3>
 
@@ -157,7 +221,7 @@ export function Settings() {
                             </div>
                         </section>
 
-                        {/* Graph Style Section */}
+                        {/* 图谱样式参数区 */}
                         <section class="settings-section">
                             <h3>🎨 样式 Style</h3>
 
@@ -220,7 +284,7 @@ export function Settings() {
                             </div>
                         </section>
 
-                        {/* Actions */}
+                        {/* 操作按钮区 */}
                         <section class="settings-section">
                             <h3>🔧 操作 Actions</h3>
                             <div class="settings-actions">

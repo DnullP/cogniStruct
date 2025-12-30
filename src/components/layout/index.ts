@@ -1,13 +1,37 @@
-// ============================================================================
-// AppLayout - VS Code Style Layout
-// ============================================================================
+/**
+ * @fileoverview 布局模块入口
+ *
+ * 本模块统一导出所有布局相关的组件、类型和辅助函数。
+ * 采用 VS Code 风格的布局系统，基于 dockview-core 实现。
+ *
+ * @module components/layout
+ *
+ * @exports AppLayout - 主应用布局组件
+ * @exports Sidebar - 侧边栏组件（基于 Paneview）
+ * @exports DockLayout - 中央标签页布局（基于 Dockview）
+ *
+ * @example
+ * ```tsx
+ * import {
+ *   AppLayout,
+ *   Sidebar,
+ *   DockLayout,
+ *   addPanel,
+ *   getPanel,
+ * } from './components/layout';
+ * ```
+ */
+
+/* ==========================================================================
+   AppLayout - VS Code 风格主布局
+   ========================================================================== */
 
 export { AppLayout } from './AppLayout';
 export type { AppLayoutProps } from './AppLayout';
 
-// ============================================================================
-// Sidebar - Paneview wrapper for collapsible card containers
-// ============================================================================
+/* ==========================================================================
+   Sidebar - 可折叠卡片容器（Paneview 包装器）
+   ========================================================================== */
 
 export {
     Sidebar,
@@ -30,16 +54,16 @@ export type {
     SidebarCardConfig,
 } from './Sidebar';
 
-// ============================================================================
-// DockLayout - SolidJS wrapper for dockview-core
-// ============================================================================
+/* ==========================================================================
+   DockLayout - 标签页布局（dockview-core 包装器）
+   ========================================================================== */
 
 export {
     DockLayout,
-    // Context hooks
+    /* Context hooks */
     useDockview,
     usePanelParams,
-    // Panel operations
+    /* 面板操作 */
     addPanel,
     getPanel,
     closePanel,
@@ -48,27 +72,27 @@ export {
     getActivePanel,
     getTotalPanels,
     removePanel,
-    // Group operations
+    /* 组操作 */
     addGroup,
     getGroup,
     removeGroup,
     getAllGroups,
     getActiveGroup,
     getGroupCount,
-    // Serialization
+    /* 序列化 */
     toJSON,
     fromJSON,
-    // Floating & Popout
+    /* 浮动和弹出 */
     addFloatingGroup,
     addPopoutGroup,
-    // Navigation
+    /* 导航 */
     moveToNext,
     moveToPrevious,
-    // Maximization
+    /* 最大化 */
     maximizeGroup,
     exitMaximizedGroup,
     hasMaximizedGroup,
-    // Layout control
+    /* 布局控制 */
     getDockview,
     clear,
     closeAllGroups,
@@ -78,9 +102,9 @@ export {
     layout,
     updateOptions,
     getId,
-    // Visibility
+    /* 可见性 */
     setGroupVisible,
-    // Movement
+    /* 移动 */
     moveGroupOrPanel,
 } from './DockLayout';
 
@@ -94,12 +118,12 @@ export type {
     AddPanelOptionsExtended,
 } from './DockLayout';
 
-// ============================================================================
-// Re-export useful types from dockview-core
-// ============================================================================
+/* ==========================================================================
+   从 dockview-core 重新导出的类型
+   ========================================================================== */
 
 export type {
-    // Dockview types
+    /* Dockview 类型 */
     DockviewPanel,
     DockviewGroupPanel,
     DockviewComponent,
@@ -120,7 +144,7 @@ export type {
     PopoutGroupChangePositionEvent,
     DockviewComponentOptions,
     Position,
-    // Paneview types
+    /* Paneview 类型 */
     PaneviewComponent,
     IPaneviewPanel,
     SerializedPaneview,
