@@ -97,8 +97,32 @@
     --vscode-sideBarSectionHeader-background: transparent;
     /** 活动条背景 */
     --vscode-activityBar-background: #333333;
-    /** 活动条前景色 */
+    /** 活动条前景色（激活） */
     --vscode-activityBar-foreground: #ffffff;
+    /** 活动条前景色（未激活） */
+    --vscode-activityBar-inactiveForeground: rgba(255, 255, 255, 0.4);
+    /** 活动条激活边框 */
+    --vscode-activityBar-activeBorder: #ffffff;
+    /** 活动条边框 */
+    --vscode-activityBar-border: #3c3c3c;
+
+    /* ======== 标签栏变量 ======== */
+    /** 标签栏背景 */
+    --vscode-editorGroupHeader-tabsBackground: var(--bg-secondary);
+    /** 激活标签背景 */
+    --vscode-tab-activeBackground: var(--bg-tertiary);
+    /** 激活标签前景色 */
+    --vscode-tab-activeForeground: var(--text-primary);
+    /** 未激活标签背景 */
+    --vscode-tab-inactiveBackground: var(--bg-secondary);
+    /** 未激活标签前景色 */
+    --vscode-tab-inactiveForeground: var(--text-secondary);
+    /** 标签边框 */
+    --vscode-tab-border: var(--border-color);
+    /** 激活标签底部边框（高亮线） */
+    --vscode-tab-activeBorderTop: var(--accent-color);
+
+    /* ======== 标题栏变量 ======== */
     /** 标题栏活动背景 */
     --vscode-titleBar-activeBackground: #3c3c3c;
     /** 标题栏活动前景色 */
@@ -177,6 +201,22 @@
     --vscode-sideBarSectionHeader-background: transparent;
     --vscode-activityBar-background: #2c2c2c;
     --vscode-activityBar-foreground: #ffffff;
+    /** 活动条前景色（未激活） - 浅色主题 */
+    --vscode-activityBar-inactiveForeground: rgba(255, 255, 255, 0.5);
+    /** 活动条激活边框 - 浅色主题 */
+    --vscode-activityBar-activeBorder: #ffffff;
+    /** 活动条边框 - 浅色主题 */
+    --vscode-activityBar-border: #454545;
+
+    /* ======== 标签栏变量 - 浅色主题 ======== */
+    --vscode-editorGroupHeader-tabsBackground: var(--bg-secondary);
+    --vscode-tab-activeBackground: var(--bg-tertiary);
+    --vscode-tab-activeForeground: var(--text-primary);
+    --vscode-tab-inactiveBackground: var(--bg-secondary);
+    --vscode-tab-inactiveForeground: var(--text-secondary);
+    --vscode-tab-border: var(--border-color);
+    --vscode-tab-activeBorderTop: var(--accent-color);
+
     --vscode-titleBar-activeBackground: #dddddd;
     --vscode-titleBar-activeForeground: #000000;
     --vscode-titleBar-border: #cccccc;
@@ -190,4 +230,47 @@
     color-scheme: light;
     color: var(--text-primary);
     background-color: var(--bg-primary);
+}
+
+/* ==========================================================================
+   禁用文本选择
+   
+   防止用户意外选择 UI 文本，提升交互体验
+   ========================================================================== */
+
+/** 默认禁用所有 UI 元素的文本选择 */
+.app-layout {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/** 允许编辑器和输入框中选择文本 */
+.app-layout input,
+.app-layout textarea,
+.app-layout [contenteditable="true"],
+.app-layout .selectable-text,
+.app-layout .panel-content,
+.app-layout .editor-content,
+.app-layout pre,
+.app-layout code {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+/** 卡片头部、按钮、图标等不可选择 */
+.sidebar-card-header,
+.activity-bar-item,
+.status-item,
+.file-tree-item,
+.header-title,
+.sidebar-toggle-btn {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: default;
 }

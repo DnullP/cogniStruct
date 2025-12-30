@@ -449,19 +449,15 @@ export function MainLayout() {
             /* 从面板 ID 提取文件路径 */
             const panelId = panel.id;
             if (panelId.startsWith('editor-')) {
-                /* 尝试从面板参数获取文件路径 */
-                const params = (panel as any).params as { filePath?: string } | undefined;
-                if (params?.filePath) {
+                /* 获取文件路径 - 优先从存储的参数映射中获取，因为 panel.params 可能不可靠 */
+                const storedParams = (window as any).__dockviewPanelParams?.get(panelId) as { filePath?: string } | undefined;
+                const panelParams = panel.params as { filePath?: string } | undefined;
+                const filePath = storedParams?.filePath || panelParams?.filePath;
+
+                if (filePath) {
                     /* 更新选中文件并展开文件树 */
-                    appStore.setSelectedFile(params.filePath);
-                    appStore.expandToFile(params.filePath);
-                } else {
-                    /* 尝试从存储的参数映射中获取 */
-                    const storedParams = (window as any).__dockviewPanelParams?.get(panelId) as { filePath?: string } | undefined;
-                    if (storedParams?.filePath) {
-                        appStore.setSelectedFile(storedParams.filePath);
-                        appStore.expandToFile(storedParams.filePath);
-                    }
+                    appStore.setSelectedFile(filePath);
+                    appStore.expandToFile(filePath);
                 }
             }
         });

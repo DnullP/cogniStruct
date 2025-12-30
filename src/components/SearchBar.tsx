@@ -103,10 +103,17 @@ export function SearchBar() {
           </div>
           <For each={appStore.searchResults()}>
             {(result) => (
-              /* search-result-item: 单个搜索结果项 */
+              /* search-result-item: 单个搜索结果项，tabindex 使其可聚焦 */
               <div
                 class="search-result-item"
+                tabindex="0"
                 onClick={() => handleResultClick(result.path)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleResultClick(result.path);
+                  }
+                }}
               >
                 {/* search-result-icon: 结果图标 */}
                 <span class="search-result-icon">📄</span>

@@ -247,21 +247,23 @@
 
 /* ==========================================================================
    亮色主题覆盖
+   
+   使用 [data-theme="light"] 属性选择器匹配主题系统
    ========================================================================== */
 
 /* 亮色主题侧边栏 */
-.light .sidebar {
+[data-theme="light"] .sidebar {
     background-color: var(--vscode-sideBar-background, #f3f3f3);
     border-color: var(--vscode-sideBar-border, #e5e5e5);
 }
 
 /* 亮色主题卡片头部 */
-.light .sidebar-card-header {
+[data-theme="light"] .sidebar-card-header {
     color: var(--vscode-sideBarSectionHeader-foreground, #6f6f6f);
 }
 
 /* 亮色主题卡片主体 */
-.light .sidebar-card-body {
+[data-theme="light"] .sidebar-card-body {
     background-color: var(--vscode-sideBar-background, #f3f3f3);
     color: var(--vscode-sideBar-foreground, #616161);
 }
@@ -290,11 +292,11 @@
 }
 
 /* 亮色主题 sash 样式 */
-.light .sidebar .dv-vertical>.dv-sash-container>.dv-sash {
+[data-theme="light"] .sidebar .dv-vertical>.dv-sash-container>.dv-sash {
     background-color: var(--border-color, rgba(128, 128, 128, 0.2));
 }
 
-.light .sidebar .dv-sash-container .dv-sash:not(.disabled):hover,
-.light .sidebar .dv-sash-container .dv-sash:not(.disabled):active {
+[data-theme="light"] .sidebar .dv-sash-container .dv-sash:not(.disabled):hover,
+[data-theme="light"] .sidebar .dv-sash-container .dv-sash:not(.disabled):active {
     background-color: var(--accent-color, #0078d4) !important;
 }

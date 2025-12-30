@@ -145,6 +145,7 @@
  * - 水平弹性布局
  * - 可点击样式
  * - 悬停高亮
+ * - tabindex="0" 使其可聚焦
  */
 .search-result-item {
   display: flex;
@@ -152,14 +153,25 @@
   gap: 10px;
   padding: 10px 16px;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition: background-color 0.15s ease, outline 0.1s ease;
   border-bottom: 1px solid var(--border-color);
+  outline: none;
 }
 
 /* .search-result-item:hover: 悬停状态
  * - 背景色变亮
  */
 .search-result-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* .search-result-item:focus: 焦点状态
+ * - 蓝色焦点边框
+ * - 支持键盘导航
+ */
+.search-result-item:focus {
+  outline: 1px solid var(--vscode-focusBorder, #007fd4);
+  outline-offset: -1px;
   background-color: var(--bg-tertiary);
 }
 

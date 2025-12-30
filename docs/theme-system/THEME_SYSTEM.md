@@ -428,6 +428,65 @@ CSS 变量支持情况：
 - 浅色主题 `[data-theme="light"]` 中未定义该变量
 - 需要同时更新深色和浅色主题部分
 
+### ⚠️ 重要：浅色主题选择器规范
+
+**使用 `[data-theme="light"]` 而非 `.light` 类选择器！**
+
+主题系统通过 `document.documentElement.setAttribute('data-theme', theme)` 设置主题属性。因此，浅色主题的 CSS 选择器必须使用属性选择器：
+
+```css
+/* ✅ 正确：使用 data-theme 属性选择器 */
+[data-theme="light"] .my-component {
+  background-color: var(--bg-primary);
+}
+
+/* ❌ 错误：使用 .light 类选择器（永远不会生效） */
+.light .my-component {
+  background-color: var(--bg-primary);
+}
+```
+
+### ⚠️ 重要：dockview 组件样式覆盖
+
+dockview 库在传入的容器元素内部创建子元素，并将主题类应用到该子元素上。因此，覆盖 dockview 样式时需要使用**后代选择器**（带空格）：
+
+```css
+/* ✅ 正确：使用后代选择器（空格）
+ * DOM 结构：<div class="dockview-container">
+ *             <div class="dockview-theme-abyss">...</div>
+ *           </div>
+ */
+.dockview-container .dockview-theme-abyss {
+  --dv-color-abyss-dark: var(--bg-primary);
+  --dv-color-abyss: var(--bg-secondary);
+}
+
+/* ❌ 错误：使用复合选择器（无空格）
+ * 这表示同一元素同时有两个类，但实际上它们在不同元素上
+ */
+.dockview-container.dockview-theme-abyss {
+  /* 永远不会匹配！ */
+}
+```
+
+**覆盖 dockview 基础颜色变量：**
+
+dockview 使用自己的基础颜色变量（如 `--dv-color-abyss-dark`）来派生其他颜色。直接覆盖这些基础变量可以确保主题一致性：
+
+```css
+.dockview-container .dockview-theme-abyss {
+  /* 覆盖 dockview 基础颜色变量 */
+  --dv-color-abyss-dark: var(--bg-primary);
+  --dv-color-abyss: var(--bg-secondary);
+  --dv-color-abyss-light: var(--bg-secondary);
+  --dv-color-abyss-lighter: var(--border-color);
+  --dv-color-abyss-primary-text: var(--text-primary);
+  --dv-color-abyss-secondary-text: var(--text-secondary);
+  
+  /* 以及其他派生变量... */
+}
+```
+
 ## 📚 参考资源
 
 - [MDN - CSS 变量](https://developer.mozilla.org/zh-CN/docs/Web/CSS/--*)

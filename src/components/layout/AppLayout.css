@@ -129,6 +129,21 @@
     flex-direction: row;
 }
 
+/* .sidebar-wrapper: 侧边栏包装器
+ * - 用于添加焦点样式
+ * - 高度 100% 填充父容器
+ */
+.sidebar-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* 确保 sidebar-wrapper 内的 sidebar 填满容器 */
+.sidebar-wrapper>.sidebar {
+    flex: 1;
+}
+
 /* ==========================================================================
    侧边栏切换按钮头部
    ========================================================================== */
@@ -237,43 +252,45 @@
 
 /* ==========================================================================
    浅色主题覆盖
+   
+   使用 [data-theme="light"] 属性选择器匹配主题系统
    ========================================================================== */
 
-/* .light .app-layout: 浅色主题根容器 */
-.light .app-layout {
+/* [data-theme="light"] .app-layout: 浅色主题根容器 */
+[data-theme="light"] .app-layout {
     background-color: var(--vscode-editor-background, #ffffff);
     color: var(--vscode-editor-foreground, #333333);
 }
 
-/* .light .app-layout-header: 浅色主题标题栏 */
-.light .app-layout-header {
+/* [data-theme="light"] .app-layout-header: 浅色主题标题栏 */
+[data-theme="light"] .app-layout-header {
     background-color: var(--vscode-titleBar-activeBackground, #dddddd);
     border-bottom-color: var(--vscode-titleBar-border, #cccccc);
 }
 
-/* .light .app-layout-activity-bar: 浅色主题活动栏 */
-.light .app-layout-activity-bar {
+/* [data-theme="light"] .app-layout-activity-bar: 浅色主题活动栏 */
+[data-theme="light"] .app-layout-activity-bar {
     background-color: var(--vscode-activityBar-background, #2c2c2c);
 }
 
-/* .light .app-layout-center: 浅色主题中央区 */
-.light .app-layout-center {
+/* [data-theme="light"] .app-layout-center: 浅色主题中央区 */
+[data-theme="light"] .app-layout-center {
     background-color: var(--vscode-editor-background, #ffffff);
 }
 
-/* .light .app-layout-status-bar: 浅色主题状态栏 */
-.light .app-layout-status-bar {
+/* [data-theme="light"] .app-layout-status-bar: 浅色主题状态栏 */
+[data-theme="light"] .app-layout-status-bar {
     background-color: var(--vscode-statusBar-background, #007acc);
 }
 
-/* .light .sidebar-toggle-header: 浅色主题切换按钮头部 */
-.light .sidebar-toggle-header {
+/* [data-theme="light"] .sidebar-toggle-header: 浅色主题切换按钮头部 */
+[data-theme="light"] .sidebar-toggle-header {
     background-color: var(--vscode-sideBar-background, #f3f3f3);
     border-color: var(--vscode-sideBar-border, #e7e7e7);
 }
 
-/* .light .sidebar-toggle-btn: 浅色主题切换按钮 */
-.light .sidebar-toggle-btn {
+/* [data-theme="light"] .sidebar-toggle-btn: 浅色主题切换按钮 */
+[data-theme="light"] .sidebar-toggle-btn {
     color: var(--vscode-icon-foreground, #424242);
 }
 

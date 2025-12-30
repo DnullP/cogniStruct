@@ -90,12 +90,19 @@
   padding: 6px 12px;
   cursor: pointer;
   font-size: 13px;
-  transition: background 0.2s;
+  transition: background 0.2s, outline 0.1s;
+  outline: none;
 }
 
 /* .file-item:hover: 文件悬停状态 */
 .file-item:hover {
   background: var(--bg-hover);
+}
+
+/* .file-item:focus: 文件聚焦状态 */
+.file-item:focus {
+  outline: 1px solid var(--vscode-focusBorder, #007fd4);
+  outline-offset: -1px;
 }
 
 /* .file-item.active: 当前选中的文件
@@ -128,12 +135,19 @@
   padding: 6px 12px;
   cursor: pointer;
   font-size: 13px;
-  transition: background 0.2s;
+  transition: background 0.2s, outline 0.1s;
+  outline: none;
 }
 
 /* .folder-item:hover: 目录悬停状态 */
 .folder-item:hover {
   background: var(--bg-hover);
+}
+
+/* .folder-item:focus: 目录聚焦状态 */
+.folder-item:focus {
+  outline: 1px solid var(--vscode-focusBorder, #007fd4);
+  outline-offset: -1px;
 }
 
 /* .folder-icon: 目录图标 */

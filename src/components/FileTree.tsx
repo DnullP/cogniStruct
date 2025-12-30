@@ -16,7 +16,7 @@
  * @exports FileTree - 文件树组件
  */
 
-import { For, Show, createEffect } from 'solid-js';
+import { For, Show } from 'solid-js';
 import { appStore, FileNode } from '../stores/appStore';
 /* 样式：FileTree.css - 文件树布局和交互样式 */
 import './FileTree.css';
@@ -59,11 +59,18 @@ function FileTreeItem(props: FileTreeItemProps) {
       <Show
         when={props.node.is_dir}
         fallback={
-          /* file-item: 文件项目，可点击打开文件 */
+          /* file-item: 文件项目，可点击打开文件，tabindex 使其可聚焦 */
           <div
             class="file-item"
             classList={{ active: appStore.selectedFile() === props.node.path }}
+            tabindex="0"
             onClick={() => appStore.openFile(props.node.path)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                appStore.openFile(props.node.path);
+              }
+            }}
           >
             📄 {props.node.name}
           </div>
@@ -71,11 +78,18 @@ function FileTreeItem(props: FileTreeItemProps) {
       >
         {/* folder-container: 目录容器 */}
         <div class="folder-container">
-          {/* folder-item: 目录项目，可点击展开/折叠 */}
+          {/* folder-item: 目录项目，可点击展开/折叠，tabindex 使其可聚焦 */}
           <div
             class="folder-item"
             classList={{ expanded: isExpanded() }}
+            tabindex="0"
             onClick={handleFolderClick}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleFolderClick();
+              }
+            }}
           >
             <span class="folder-icon">{isExpanded() ? '📂' : '📁'}</span>
             <span class="folder-name">{props.node.name}</span>

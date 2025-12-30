@@ -35,34 +35,46 @@
    ========================================================================== */
 
 /* 暗色主题 CSS 变量定义 */
-.dockview-container.dockview-theme-abyss {
-    /* 背景色 */
-    --dv-background-color: var(--bg-primary, var(--bg-primary));
-    --dv-paneview-header-border-color: var(--border-color, var(--border-color));
-    --dv-tabs-and-actions-container-background-color: var(--bg-secondary, var(--bg-secondary));
+/* 注意：使用后代选择器（空格），因为 dockview 在容器内创建带主题类的子元素 */
+.dockview-container .dockview-theme-abyss {
+    /* 
+     * 覆盖 dockview 的基础颜色变量
+     * dockview 内部使用这些变量派生其他颜色，直接覆盖更可靠
+     */
+    --dv-color-abyss-dark: var(--bg-primary);
+    --dv-color-abyss: var(--bg-secondary);
+    --dv-color-abyss-light: var(--bg-secondary);
+    --dv-color-abyss-lighter: var(--border-color);
+    --dv-color-abyss-primary-text: var(--text-primary);
+    --dv-color-abyss-secondary-text: var(--text-secondary);
+
+    /* 背景色 - 直接覆盖最终使用的变量 */
+    --dv-background-color: var(--bg-primary);
+    --dv-paneview-header-border-color: var(--border-color);
+    --dv-tabs-and-actions-container-background-color: var(--vscode-editorGroupHeader-tabsBackground, var(--bg-secondary));
 
     /* 活动组标签背景 */
-    --dv-activegroup-visiblepanel-tab-background-color: var(--bg-tertiary, var(--bg-tertiary));
-    --dv-activegroup-hiddenpanel-tab-background-color: var(--bg-secondary, var(--bg-secondary));
+    --dv-activegroup-visiblepanel-tab-background-color: var(--vscode-tab-activeBackground, var(--bg-tertiary));
+    --dv-activegroup-hiddenpanel-tab-background-color: var(--vscode-tab-inactiveBackground, var(--bg-secondary));
 
     /* 非活动组标签背景 */
-    --dv-inactivegroup-visiblepanel-tab-background-color: var(--bg-tertiary, var(--bg-tertiary));
-    --dv-inactivegroup-hiddenpanel-tab-background-color: var(--bg-secondary, var(--bg-secondary));
+    --dv-inactivegroup-visiblepanel-tab-background-color: var(--vscode-tab-activeBackground, var(--bg-tertiary));
+    --dv-inactivegroup-hiddenpanel-tab-background-color: var(--vscode-tab-inactiveBackground, var(--bg-secondary));
 
     /* 标签分隔线 */
-    --dv-tab-divider-color: var(--border-color, var(--border-color));
+    --dv-tab-divider-color: var(--vscode-tab-border, var(--border-color));
 
     /* 活动组标签文字 */
-    --dv-activegroup-visiblepanel-tab-color: var(--text-primary, var(--text-primary));
-    --dv-activegroup-hiddenpanel-tab-color: var(--text-secondary, #9a9a9a);
+    --dv-activegroup-visiblepanel-tab-color: var(--vscode-tab-activeForeground, var(--text-primary));
+    --dv-activegroup-hiddenpanel-tab-color: var(--vscode-tab-inactiveForeground, var(--text-secondary));
 
     /* 非活动组标签文字 */
-    --dv-inactivegroup-visiblepanel-tab-color: var(--text-primary, var(--text-primary));
-    --dv-inactivegroup-hiddenpanel-tab-color: var(--text-secondary, #9a9a9a);
+    --dv-inactivegroup-visiblepanel-tab-color: var(--vscode-tab-activeForeground, var(--text-primary));
+    --dv-inactivegroup-hiddenpanel-tab-color: var(--vscode-tab-inactiveForeground, var(--text-secondary));
 
     /* 分隔线和组视图背景 */
-    --dv-separator-border: var(--border-color, var(--border-color));
-    --dv-group-view-background-color: var(--bg-primary, var(--bg-primary));
+    --dv-separator-border: var(--border-color);
+    --dv-group-view-background-color: var(--bg-primary);
 
     /* 拖放叠加层 - 重要：必须可见以支持拖放功能 */
     --dv-drag-over-background-color: rgba(14, 99, 156, 0.3);
@@ -145,21 +157,32 @@
    ========================================================================== */
 
 /* 亮色主题 CSS 变量覆盖 */
-[data-theme="light"] .dockview-container.dockview-theme-abyss {
-    --dv-background-color: var(--bg-primary, #ffffff);
-    --dv-paneview-header-border-color: var(--border-color, var(--text-primary));
-    --dv-tabs-and-actions-container-background-color: var(--bg-secondary, #f3f3f3);
-    --dv-activegroup-visiblepanel-tab-background-color: var(--bg-tertiary, #e4e4e4);
-    --dv-activegroup-hiddenpanel-tab-background-color: var(--bg-secondary, #f3f3f3);
-    --dv-inactivegroup-visiblepanel-tab-background-color: var(--bg-tertiary, #e4e4e4);
-    --dv-inactivegroup-hiddenpanel-tab-background-color: var(--bg-secondary, #f3f3f3);
-    --dv-tab-divider-color: var(--border-color, var(--text-primary));
-    --dv-activegroup-visiblepanel-tab-color: var(--text-primary, var(--bg-primary));
-    --dv-activegroup-hiddenpanel-tab-color: var(--text-secondary, #6a6a6a);
-    --dv-inactivegroup-visiblepanel-tab-color: var(--text-primary, var(--bg-primary));
-    --dv-inactivegroup-hiddenpanel-tab-color: var(--text-secondary, #6a6a6a);
-    --dv-separator-border: var(--border-color, var(--text-primary));
-    --dv-group-view-background-color: var(--bg-primary, #ffffff);
+/* 注意：使用后代选择器（空格），因为 dockview 在容器内创建带主题类的子元素 */
+[data-theme="light"] .dockview-container .dockview-theme-abyss {
+    /* 
+     * 覆盖 dockview 的基础颜色变量 - 亮色主题
+     */
+    --dv-color-abyss-dark: var(--bg-primary);
+    --dv-color-abyss: var(--bg-secondary);
+    --dv-color-abyss-light: var(--bg-secondary);
+    --dv-color-abyss-lighter: var(--border-color);
+    --dv-color-abyss-primary-text: var(--text-primary);
+    --dv-color-abyss-secondary-text: var(--text-secondary);
+
+    --dv-background-color: var(--bg-primary);
+    --dv-paneview-header-border-color: var(--border-color);
+    --dv-tabs-and-actions-container-background-color: var(--vscode-editorGroupHeader-tabsBackground, var(--bg-secondary));
+    --dv-activegroup-visiblepanel-tab-background-color: var(--vscode-tab-activeBackground, var(--bg-tertiary));
+    --dv-activegroup-hiddenpanel-tab-background-color: var(--vscode-tab-inactiveBackground, var(--bg-secondary));
+    --dv-inactivegroup-visiblepanel-tab-background-color: var(--vscode-tab-activeBackground, var(--bg-tertiary));
+    --dv-inactivegroup-hiddenpanel-tab-background-color: var(--vscode-tab-inactiveBackground, var(--bg-secondary));
+    --dv-tab-divider-color: var(--vscode-tab-border, var(--border-color));
+    --dv-activegroup-visiblepanel-tab-color: var(--vscode-tab-activeForeground, var(--text-primary));
+    --dv-activegroup-hiddenpanel-tab-color: var(--vscode-tab-inactiveForeground, var(--text-secondary));
+    --dv-inactivegroup-visiblepanel-tab-color: var(--vscode-tab-activeForeground, var(--text-primary));
+    --dv-inactivegroup-hiddenpanel-tab-color: var(--vscode-tab-inactiveForeground, var(--text-secondary));
+    --dv-separator-border: var(--border-color);
+    --dv-group-view-background-color: var(--bg-primary);
 
     /* 
      * Sash（拖拽调整大小手柄）样式 - 亮色主题

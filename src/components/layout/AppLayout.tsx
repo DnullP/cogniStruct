@@ -202,13 +202,15 @@ export function AppLayout(props: AppLayoutProps) {
                     </div>
                     {/* 左侧边栏内容 */}
                     <Show when={props.showLeftSidebar !== false && Object.keys(props.cards).length > 0}>
-                        <Sidebar
-                            position="left"
-                            cards={props.cards}
-                            initialLayout={props.leftSidebarLayout}
-                            width={leftWidth()}
-                            onReady={props.onLeftSidebarReady}
-                        />
+                        <div class="sidebar-wrapper">
+                            <Sidebar
+                                position="left"
+                                cards={props.cards}
+                                initialLayout={props.leftSidebarLayout}
+                                width={leftWidth()}
+                                onReady={props.onLeftSidebarReady}
+                            />
+                        </div>
                         {/* 左侧调整手柄 */}
                         <div
                             class="app-layout-resize-handle resize-handle-left"
@@ -238,13 +240,15 @@ export function AppLayout(props: AppLayoutProps) {
                             classList={{ resizing: isResizingRight() }}
                             onMouseDown={startResizeRight}
                         />
-                        <Sidebar
-                            position="right"
-                            cards={props.cards}
-                            initialLayout={props.rightSidebarLayout}
-                            width={rightWidth()}
-                            onReady={props.onRightSidebarReady}
-                        />
+                        <div class="sidebar-wrapper">
+                            <Sidebar
+                                position="right"
+                                cards={props.cards}
+                                initialLayout={props.rightSidebarLayout}
+                                width={rightWidth()}
+                                onReady={props.onRightSidebarReady}
+                            />
+                        </div>
                     </Show>
                     {/* 右侧边栏头部（含切换按钮） */}
                     <div class="sidebar-toggle-header right">

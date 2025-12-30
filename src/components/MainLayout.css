@@ -119,6 +119,7 @@
 /* .activity-bar-item: 活动栏按钮
  * - 固定尺寸
  * - 左侧边框指示激活状态
+ * - 使用全局主题变量
  */
 .activity-bar-item {
     width: 48px;
@@ -130,23 +131,23 @@
     background: none;
     border: none;
     border-left: 2px solid transparent;
-    color: var(--vscode-activityBar-inactiveForeground, rgba(255, 255, 255, 0.4));
+    color: var(--vscode-activityBar-inactiveForeground);
     cursor: pointer;
     transition: color 0.15s ease, border-color 0.15s ease;
 }
 
 /* .activity-bar-item:hover: 悬停状态 */
 .activity-bar-item:hover {
-    color: var(--vscode-activityBar-foreground, #ffffff);
+    color: var(--vscode-activityBar-foreground);
 }
 
 /* .activity-bar-item.active: 激活状态
- * - 白色文字
+ * - 高亮文字颜色
  * - 左侧边框高亮
  */
 .activity-bar-item.active {
-    color: var(--vscode-activityBar-foreground, #ffffff);
-    border-left-color: var(--vscode-activityBar-activeBorder, #ffffff);
+    color: var(--vscode-activityBar-foreground);
+    border-left-color: var(--vscode-activityBar-activeBorder);
 }
 
 /* .activity-bar-spacer: 活动栏弹性空间 */
@@ -199,25 +200,21 @@
 
 /* ==========================================================================
    浅色主题覆盖
+   
+   使用 [data-theme="light"] 属性选择器匹配主题系统
    ========================================================================== */
 
-/* .light .welcome-panel: 浅色主题欢迎面板 */
-.light .welcome-panel {
+/* [data-theme="light"] .welcome-panel: 浅色主题欢迎面板 */
+[data-theme="light"] .welcome-panel {
     background-color: var(--vscode-editor-background, #ffffff);
 }
 
-/* .light .welcome-content h1: 浅色主题欢迎标题 */
-.light .welcome-content h1 {
+/* [data-theme="light"] .welcome-content h1: 浅色主题欢迎标题 */
+[data-theme="light"] .welcome-content h1 {
     color: var(--vscode-editor-foreground, #333333);
 }
 
-/* .light .activity-bar-item: 浅色主题活动栏按钮 */
-.light .activity-bar-item {
-    color: var(--vscode-activityBar-inactiveForeground, rgba(0, 0, 0, 0.4));
-}
-
-/* .light .activity-bar-item:hover, .light .activity-bar-item.active: 浅色主题悬停/激活状态 */
-.light .activity-bar-item:hover,
-.light .activity-bar-item.active {
-    color: var(--vscode-activityBar-foreground, #ffffff);
-}
+/* 
+ * 注意：activity-bar-item 的浅色主题样式现在通过 theme.css 中的
+ * --vscode-activityBar-* 变量自动适配，不再需要额外的浅色覆盖
+ */
