@@ -1,12 +1,22 @@
 //! # CogniStruct Library
 //!
 //! CogniStruct 是一个用于管理和可视化 Markdown 知识库的 Tauri 应用程序后端。
+//! 基于 DCOM（Dynamic Cognitive Object Model）架构设计。
 //!
 //! ## 模块结构
 //!
+//! - [`adapters`] - 适配器模块，将各种格式转换为 DCOM 认知对象
 //! - [`commands`] - Tauri 命令处理模块，提供前端调用的 API 接口
 //! - [`db`] - 数据库模块，基于 CozoDB 实现图数据存储
-//! - [`sync`] - 同步模块，负责文件监听和 Markdown 解析
+//! - [`dcom`] - DCOM 核心模块，定义认知对象数据结构
+//! - [`sync`] - 同步模块，负责文件监听和变化处理
+//!
+//! ## 架构设计
+//!
+//! 系统采用三层架构：
+//! - **DCOM 核心层**：抽象的认知对象模型，格式无关
+//! - **适配器层**：将具体格式（Obsidian Markdown 等）映射到 DCOM
+//! - **存储层**：CozoDB 索引 + 文件系统持久化
 //!
 //! ## 功能特性
 //!
@@ -14,6 +24,8 @@
 //! - 解析 Markdown 文件中的 wikilinks 和标签
 //! - 构建知识图谱并提供图数据查询
 //! - 实时监听文件变化并同步更新
+//! - 动态属性和类型推演支持
+//! - 可扩展的适配器架构
 //!
 //! ## 使用示例
 //!
@@ -22,8 +34,10 @@
 //! cognistruct_lib::run();
 //! ```
 
+pub mod adapters;
 mod commands;
 mod db;
+pub mod dcom;
 mod sync;
 
 use commands::AppState;
@@ -54,7 +68,8 @@ pub fn run() {
             commands::get_file_tree,
             commands::get_file_content,
             commands::save_file,
-            commands::search_nodes
+            commands::search_nodes,
+            commands::get_vault_statistics
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

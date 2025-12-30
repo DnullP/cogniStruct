@@ -20,6 +20,7 @@
 //! - [`get_file_content`] - 获取文件内容
 //! - [`save_file`] - 保存文件
 //! - [`search_nodes`] - 搜索节点
+//! - [`get_vault_statistics`] - 获取 Vault 统计信息
 //!
 //! ## 使用示例
 //!
@@ -28,6 +29,7 @@
 //! ```javascript
 //! // 前端调用示例
 //! const result = await invoke('open_vault', { path: '/path/to/vault' });
+//! const stats = await invoke('get_vault_statistics');
 //! ```
 
 use crate::db::{Database, GraphData, Node};
@@ -327,6 +329,33 @@ pub async fn search_nodes(query: String, state: State<'_, AppState>) -> Result<V
     let db = db_guard.as_ref().ok_or("No vault opened")?;
 
     db.search_nodes(&query).map_err(|e| e.to_string())
+}
+
+/// 获取 Vault 统计信息
+///
+/// 返回知识库的基本统计数据，包括节点数、边数和标签数。
+///
+/// # 参数
+///
+/// * `state` - 应用程序状态
+///
+/// # 返回值
+///
+/// * `Ok(VaultStatistics)` - 统计信息
+/// * `Err(String)` - 获取失败，返回错误信息
+///
+/// # 错误情况
+///
+/// * 未打开知识库
+/// * 数据库查询失败
+#[tauri::command]
+pub async fn get_vault_statistics(
+    state: State<'_, AppState>,
+) -> Result<crate::db::VaultStatistics, String> {
+    let db_guard = state.db.lock().unwrap();
+    let db = db_guard.as_ref().ok_or("No vault opened")?;
+
+    db.get_statistics().map_err(|e| e.to_string())
 }
 
 #[cfg(test)]

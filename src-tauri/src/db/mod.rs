@@ -132,6 +132,25 @@ pub struct GraphData {
     pub edges: Vec<Edge>,
 }
 
+/// Vault 统计信息
+///
+/// 包含知识库的基本统计数据。
+///
+/// # 字段说明
+///
+/// * `total_nodes` - 节点总数
+/// * `total_edges` - 边总数
+/// * `total_tags` - 标签总数
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VaultStatistics {
+    /// 节点总数
+    pub total_nodes: usize,
+    /// 边总数
+    pub total_edges: usize,
+    /// 标签总数
+    pub total_tags: usize,
+}
+
 impl Database {
     /// 创建新的数据库实例
     ///
@@ -162,9 +181,17 @@ impl Database {
 
     /// 初始化数据库 Schema
     ///
-    /// 创建 nodes 和 edges 表，如果表已存在则忽略错误。
+    /// 创建 nodes、edges、properties 和 sources 表，如果表已存在则忽略错误。
+    ///
+    /// ## Schema 设计（DCOM 架构）
+    ///
+    /// - **nodes**: 认知对象核心信息
+    /// - **edges**: 对象之间的关系
+    /// - **properties**: EAV 模式的动态属性存储
+    /// - **sources**: 序列化源信息（物理表示）
     fn init_schema(&mut self) -> Result<()> {
-        // Create nodes table - ignore error if already exists
+        // Create nodes table - 认知对象核心表
+        // 保持向后兼容，同时支持 DCOM 扩展字段
         let _ = self.db.run_script(
             r#"
             :create nodes {
@@ -183,7 +210,7 @@ impl Database {
             ScriptMutability::Mutable,
         );
 
-        // Create edges table - ignore error if already exists
+        // Create edges table - 关系边表
         let _ = self.db.run_script(
             r#"
             :create edges {
@@ -193,6 +220,65 @@ impl Database {
                 relation: String,
                 weight: Float,
                 source: String
+            }
+            "#,
+            Default::default(),
+            ScriptMutability::Mutable,
+        );
+
+        // Create properties table - EAV 动态属性表
+        // 实现 Schema-less 的属性存储
+        let _ = self.db.run_script(
+            r#"
+            :create properties {
+                object_id: String,
+                name: String,
+                =>
+                value_type: String,
+                value_json: String
+            }
+            "#,
+            Default::default(),
+            ScriptMutability::Mutable,
+        );
+
+        // Create sources table - 序列化源表
+        // 记录对象的物理表示形式
+        let _ = self.db.run_script(
+            r#"
+            :create sources {
+                object_id: String,
+                source_type: String,
+                =>
+                path: String?,
+                content_hash: String?,
+                mime_type: String?,
+                size_bytes: Int?,
+                last_modified: Int
+            }
+            "#,
+            Default::default(),
+            ScriptMutability::Mutable,
+        );
+
+        // Create tags table - 标签表（多对多关系）
+        let _ = self.db.run_script(
+            r#"
+            :create tags {
+                object_id: String,
+                tag: String
+            }
+            "#,
+            Default::default(),
+            ScriptMutability::Mutable,
+        );
+
+        // Create aliases table - 别名表
+        let _ = self.db.run_script(
+            r#"
+            :create aliases {
+                object_id: String,
+                alias: String
             }
             "#,
             Default::default(),
@@ -522,6 +608,317 @@ impl Database {
 
         Ok(())
     }
+
+    // ==================== DCOM 扩展方法 ====================
+
+    /// 保存对象属性
+    ///
+    /// 将单个属性保存到 properties 表。
+    ///
+    /// # 参数
+    ///
+    /// * `object_id` - 对象 UUID
+    /// * `name` - 属性名
+    /// * `value` - 属性值（PropertyValue）
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(())` - 操作成功
+    /// * `Err(anyhow::Error)` - 数据库操作失败
+    pub fn save_property(
+        &mut self,
+        object_id: &str,
+        name: &str,
+        value: &crate::dcom::PropertyValue,
+    ) -> Result<()> {
+        let value_type = match value {
+            crate::dcom::PropertyValue::Null => "null",
+            crate::dcom::PropertyValue::String(_) => "string",
+            crate::dcom::PropertyValue::Integer(_) => "integer",
+            crate::dcom::PropertyValue::Float(_) => "float",
+            crate::dcom::PropertyValue::Boolean(_) => "boolean",
+            crate::dcom::PropertyValue::DateTime(_) => "datetime",
+            crate::dcom::PropertyValue::Reference(_) => "reference",
+            crate::dcom::PropertyValue::List(_) => "list",
+            crate::dcom::PropertyValue::Json(_) => "json",
+        };
+
+        let value_json = serde_json::to_string(value)
+            .map_err(|e| anyhow::anyhow!("Failed to serialize property: {}", e))?;
+
+        let params = Self::make_params(serde_json::json!({
+            "object_id": object_id,
+            "name": name,
+            "value_type": value_type,
+            "value_json": value_json,
+        }));
+
+        self.db.run_script(
+            r#"
+            ?[object_id, name, value_type, value_json] <- [[$object_id, $name, $value_type, $value_json]]
+            :put properties {object_id, name => value_type, value_json}
+            "#,
+            params,
+            ScriptMutability::Mutable,
+        ).map_err(|e| anyhow::anyhow!("{}", e.to_string()))?;
+
+        Ok(())
+    }
+
+    /// 获取对象的所有属性
+    ///
+    /// # 参数
+    ///
+    /// * `object_id` - 对象 UUID
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(HashMap<String, PropertyValue>)` - 属性映射
+    /// * `Err(anyhow::Error)` - 数据库查询失败
+    pub fn get_properties(
+        &self,
+        object_id: &str,
+    ) -> Result<std::collections::HashMap<String, crate::dcom::PropertyValue>> {
+        let params = Self::make_params(serde_json::json!({ "object_id": object_id }));
+
+        let result = self.db.run_script(
+            "?[name, value_json] := *properties{object_id, name, value_json}, object_id == $object_id",
+            params,
+            ScriptMutability::Immutable,
+        ).map_err(|e| anyhow::anyhow!("{}", e.to_string()))?;
+
+        let mut properties = std::collections::HashMap::new();
+        for row in &result.rows {
+            let name = row[0].get_str().unwrap_or("").to_string();
+            let value_json = row[1].get_str().unwrap_or("null");
+
+            if let Ok(value) = serde_json::from_str::<crate::dcom::PropertyValue>(value_json) {
+                properties.insert(name, value);
+            }
+        }
+
+        Ok(properties)
+    }
+
+    /// 保存对象标签
+    ///
+    /// 替换对象的所有标签。
+    ///
+    /// # 参数
+    ///
+    /// * `object_id` - 对象 UUID
+    /// * `tags` - 标签列表
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(())` - 操作成功
+    /// * `Err(anyhow::Error)` - 数据库操作失败
+    pub fn save_tags(&mut self, object_id: &str, tags: &[String]) -> Result<()> {
+        // 先删除旧标签
+        let delete_params = Self::make_params(serde_json::json!({ "object_id": object_id }));
+        let _ = self.db.run_script(
+            r#"
+            ?[object_id, tag] := *tags{object_id, tag}, object_id != $object_id
+            :replace tags {object_id, tag}
+            "#,
+            delete_params,
+            ScriptMutability::Mutable,
+        );
+
+        // 添加新标签
+        for tag in tags {
+            let params = Self::make_params(serde_json::json!({
+                "object_id": object_id,
+                "tag": tag,
+            }));
+
+            self.db
+                .run_script(
+                    r#"
+                ?[object_id, tag] <- [[$object_id, $tag]]
+                :put tags {object_id, tag}
+                "#,
+                    params,
+                    ScriptMutability::Mutable,
+                )
+                .map_err(|e| anyhow::anyhow!("{}", e.to_string()))?;
+        }
+
+        Ok(())
+    }
+
+    /// 获取对象的标签
+    ///
+    /// # 参数
+    ///
+    /// * `object_id` - 对象 UUID
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(Vec<String>)` - 标签列表
+    /// * `Err(anyhow::Error)` - 数据库查询失败
+    pub fn get_tags(&self, object_id: &str) -> Result<Vec<String>> {
+        let params = Self::make_params(serde_json::json!({ "object_id": object_id }));
+
+        let result = self
+            .db
+            .run_script(
+                "?[tag] := *tags{object_id, tag}, object_id == $object_id",
+                params,
+                ScriptMutability::Immutable,
+            )
+            .map_err(|e| anyhow::anyhow!("{}", e.to_string()))?;
+
+        let tags: Vec<String> = result
+            .rows
+            .iter()
+            .filter_map(|row| row[0].get_str().map(|s| s.to_string()))
+            .collect();
+
+        Ok(tags)
+    }
+
+    /// 保存对象别名
+    ///
+    /// 替换对象的所有别名。
+    ///
+    /// # 参数
+    ///
+    /// * `object_id` - 对象 UUID
+    /// * `aliases` - 别名列表
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(())` - 操作成功
+    /// * `Err(anyhow::Error)` - 数据库操作失败
+    pub fn save_aliases(&mut self, object_id: &str, aliases: &[String]) -> Result<()> {
+        // 先删除旧别名
+        let delete_params = Self::make_params(serde_json::json!({ "object_id": object_id }));
+        let _ = self.db.run_script(
+            r#"
+            ?[object_id, alias] := *aliases{object_id, alias}, object_id != $object_id
+            :replace aliases {object_id, alias}
+            "#,
+            delete_params,
+            ScriptMutability::Mutable,
+        );
+
+        // 添加新别名
+        for alias in aliases {
+            let params = Self::make_params(serde_json::json!({
+                "object_id": object_id,
+                "alias": alias,
+            }));
+
+            self.db
+                .run_script(
+                    r#"
+                ?[object_id, alias] <- [[$object_id, $alias]]
+                :put aliases {object_id, alias}
+                "#,
+                    params,
+                    ScriptMutability::Mutable,
+                )
+                .map_err(|e| anyhow::anyhow!("{}", e.to_string()))?;
+        }
+
+        Ok(())
+    }
+
+    /// 获取对象的别名
+    ///
+    /// # 参数
+    ///
+    /// * `object_id` - 对象 UUID
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(Vec<String>)` - 别名列表
+    /// * `Err(anyhow::Error)` - 数据库查询失败
+    pub fn get_aliases(&self, object_id: &str) -> Result<Vec<String>> {
+        let params = Self::make_params(serde_json::json!({ "object_id": object_id }));
+
+        let result = self
+            .db
+            .run_script(
+                "?[alias] := *aliases{object_id, alias}, object_id == $object_id",
+                params,
+                ScriptMutability::Immutable,
+            )
+            .map_err(|e| anyhow::anyhow!("{}", e.to_string()))?;
+
+        let aliases: Vec<String> = result
+            .rows
+            .iter()
+            .filter_map(|row| row[0].get_str().map(|s| s.to_string()))
+            .collect();
+
+        Ok(aliases)
+    }
+
+    /// 获取 Vault 统计信息
+    ///
+    /// 返回知识库的基本统计数据。
+    ///
+    /// # 返回值
+    ///
+    /// * `Ok(VaultStatistics)` - 统计信息
+    /// * `Err(anyhow::Error)` - 数据库查询失败
+    pub fn get_statistics(&self) -> Result<VaultStatistics> {
+        // 获取节点总数
+        let node_count_result = self
+            .db
+            .run_script(
+                "?[count(uuid)] := *nodes{uuid}",
+                Default::default(),
+                ScriptMutability::Immutable,
+            )
+            .map_err(|e| anyhow::anyhow!("{}", e.to_string()))?;
+
+        let total_nodes = node_count_result
+            .rows
+            .first()
+            .and_then(|row| row[0].get_int())
+            .unwrap_or(0) as usize;
+
+        // 获取边总数
+        let edge_count_result = self
+            .db
+            .run_script(
+                "?[count(src_uuid)] := *edges{src_uuid}",
+                Default::default(),
+                ScriptMutability::Immutable,
+            )
+            .map_err(|e| anyhow::anyhow!("{}", e.to_string()))?;
+
+        let total_edges = edge_count_result
+            .rows
+            .first()
+            .and_then(|row| row[0].get_int())
+            .unwrap_or(0) as usize;
+
+        // 获取标签总数
+        let tag_count_result = self
+            .db
+            .run_script(
+                "?[count(tag)] := *tags{tag}",
+                Default::default(),
+                ScriptMutability::Immutable,
+            )
+            .map_err(|e| anyhow::anyhow!("{}", e.to_string()))?;
+
+        let total_tags = tag_count_result
+            .rows
+            .first()
+            .and_then(|row| row[0].get_int())
+            .unwrap_or(0) as usize;
+
+        Ok(VaultStatistics {
+            total_nodes,
+            total_edges,
+            total_tags,
+        })
+    }
 }
 
 #[cfg(test)]
@@ -741,5 +1138,108 @@ mod tests {
         let edges = db.get_all_edges().unwrap();
         assert_eq!(nodes.len(), 0);
         assert_eq!(edges.len(), 0);
+    }
+
+    // ==================== DCOM 扩展测试 ====================
+
+    #[test]
+    fn test_save_and_get_property() {
+        let (mut db, _temp_dir) = setup_test_db();
+
+        use crate::dcom::PropertyValue;
+
+        db.save_property("obj-1", "title", &PropertyValue::string("Test Title"))
+            .unwrap();
+        db.save_property("obj-1", "priority", &PropertyValue::integer(5))
+            .unwrap();
+        db.save_property("obj-1", "done", &PropertyValue::boolean(false))
+            .unwrap();
+
+        let props = db.get_properties("obj-1").unwrap();
+        assert_eq!(props.len(), 3);
+        assert_eq!(props.get("title").unwrap().as_string(), Some("Test Title"));
+        assert_eq!(props.get("priority").unwrap().as_integer(), Some(5));
+        assert_eq!(props.get("done").unwrap().as_boolean(), Some(false));
+    }
+
+    #[test]
+    fn test_save_and_get_tags() {
+        let (mut db, _temp_dir) = setup_test_db();
+
+        let tags = vec![
+            "rust".to_string(),
+            "programming".to_string(),
+            "learning".to_string(),
+        ];
+        db.save_tags("obj-1", &tags).unwrap();
+
+        let retrieved_tags = db.get_tags("obj-1").unwrap();
+        assert_eq!(retrieved_tags.len(), 3);
+        assert!(retrieved_tags.contains(&"rust".to_string()));
+        assert!(retrieved_tags.contains(&"programming".to_string()));
+    }
+
+    #[test]
+    fn test_save_and_get_aliases() {
+        let (mut db, _temp_dir) = setup_test_db();
+
+        let aliases = vec!["alias1".to_string(), "alias2".to_string()];
+        db.save_aliases("obj-1", &aliases).unwrap();
+
+        let retrieved_aliases = db.get_aliases("obj-1").unwrap();
+        assert_eq!(retrieved_aliases.len(), 2);
+        assert!(retrieved_aliases.contains(&"alias1".to_string()));
+    }
+
+    #[test]
+    fn test_get_statistics() {
+        let (mut db, _temp_dir) = setup_test_db();
+
+        // 添加一些节点
+        let node = Node {
+            uuid: "uuid-1".to_string(),
+            path: "test.md".to_string(),
+            title: "Test".to_string(),
+            content: "Content".to_string(),
+            node_type: "note".to_string(),
+            hash: "hash1".to_string(),
+            created_at: 1234567890,
+            updated_at: 1234567890,
+        };
+        db.upsert_node(&node).unwrap();
+
+        // 添加一些边
+        let edge = Edge {
+            src_uuid: "uuid-1".to_string(),
+            dst_uuid: "uuid-2".to_string(),
+            relation: "link".to_string(),
+            weight: 1.0,
+            source: "wikilink".to_string(),
+        };
+        db.upsert_edge(&edge).unwrap();
+
+        // 添加一些标签
+        let tags = vec!["rust".to_string(), "test".to_string()];
+        db.save_tags("uuid-1", &tags).unwrap();
+
+        let stats = db.get_statistics().unwrap();
+        assert_eq!(stats.total_nodes, 1);
+        assert_eq!(stats.total_edges, 1);
+        assert_eq!(stats.total_tags, 2);
+    }
+
+    #[test]
+    fn test_property_overwrite() {
+        let (mut db, _temp_dir) = setup_test_db();
+
+        use crate::dcom::PropertyValue;
+
+        db.save_property("obj-1", "value", &PropertyValue::integer(10))
+            .unwrap();
+        db.save_property("obj-1", "value", &PropertyValue::integer(20))
+            .unwrap();
+
+        let props = db.get_properties("obj-1").unwrap();
+        assert_eq!(props.get("value").unwrap().as_integer(), Some(20));
     }
 }
