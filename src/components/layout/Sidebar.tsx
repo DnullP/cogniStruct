@@ -49,6 +49,7 @@ import {
     IPanePart,
     PanelUpdateEvent,
     Parameters,
+    getPaneData,
 } from 'dockview-core';
 import 'dockview-core/dist/styles/dockview.css';
 /* 样式：Sidebar.css - 侧边栏和卡片样式 */
@@ -151,18 +152,12 @@ export interface SidebarCardConfig {
    全局 API 存储（支持 HMR）
    ========================================================================== */
 
-/** 侧边栏拖拽数据接口 */
-interface SidebarDragData {
-    cardId: string;
-    fromPosition: 'left' | 'right';
-}
-
 declare global {
     interface Window {
         __paneviewApis?: Map<string, PaneviewComponent>;
         __paneviewCardParams?: Map<string, Map<string, Record<string, any>>>;
         __paneviewCardTypes?: Map<string, string>; /* cardId -> component type */
-        __sidebarDragData?: SidebarDragData; /* 跨边栏拖拽数据 */
+        __paneviewCardTitles?: Map<string, string>; /* cardId -> original title */
     }
 }
 
@@ -206,6 +201,19 @@ function getCardTypeMap(): Map<string, string> {
         window.__paneviewCardTypes = new Map();
     }
     return window.__paneviewCardTypes;
+}
+
+/**
+ * 获取卡片标题映射
+ *
+ * @returns 卡片标题映射 (cardId -> original title)
+ * @internal
+ */
+function getCardTitleMap(): Map<string, string> {
+    if (!window.__paneviewCardTitles) {
+        window.__paneviewCardTitles = new Map();
+    }
+    return window.__paneviewCardTitles;
 }
 
 /**
@@ -278,7 +286,7 @@ class SolidPaneBodyRenderer implements IPanePart {
  * SolidJS 面板头部渲染器
  *
  * 渲染 Paneview 面板的头部（标题和图标）
- * 支持跨边栏拖拽移动
+ * 拖拽功能由 dockview-core 的 DraggablePaneviewPanel 处理
  *
  * @internal
  */
@@ -286,59 +294,24 @@ class SolidPaneHeaderRenderer implements IPanePart {
     private _element: HTMLElement;
     private _title: string;
     private _icon?: string;
-    private _panelId?: string;
-    private _position?: 'left' | 'right';
 
     get element(): HTMLElement {
         return this._element;
     }
 
-    constructor(title: string, icon?: string, panelId?: string, position?: 'left' | 'right') {
+    constructor(title: string, icon?: string) {
         this._title = title;
         this._icon = icon;
-        this._panelId = panelId;
-        this._position = position;
         this._element = document.createElement('div');
-        this._element.className = 'sidebar-card-header sidebar-card-draggable';
-        this._element.draggable = true;
+        this._element.className = 'sidebar-card-header';
         this._updateContent();
-        this._setupDragEvents();
     }
 
     private _updateContent(): void {
         this._element.innerHTML = `
             ${this._icon ? `<span class="sidebar-card-icon">${this._icon}</span>` : ''}
             <span class="sidebar-card-title">${this._title}</span>
-            <span class="sidebar-card-drag-hint" title="Drag to move between sidebars">⋮⋮</span>
         `;
-    }
-
-    private _setupDragEvents(): void {
-        if (!this._panelId || !this._position) return;
-
-        this._element.addEventListener('dragstart', (e) => {
-            /* 设置拖拽数据到全局变量 */
-            window.__sidebarDragData = {
-                cardId: this._panelId!,
-                fromPosition: this._position!,
-            };
-            /* 设置拖拽效果 */
-            if (e.dataTransfer) {
-                e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('text/plain', this._panelId!);
-            }
-            /* 添加拖拽样式 */
-            this._element.classList.add('dragging');
-        });
-
-        this._element.addEventListener('dragend', () => {
-            /* 清理拖拽状态 */
-            this._element.classList.remove('dragging');
-            /* 延迟清理拖拽数据，给 drop 事件处理时间 */
-            setTimeout(() => {
-                window.__sidebarDragData = undefined;
-            }, 100);
-        });
     }
 
     init(): void {
@@ -424,9 +397,20 @@ function setupEventHandlers(paneview: PaneviewComponent, props: SidebarProps) {
                 /* 确定源边栏位置 */
                 const sourcePosition = props.position === 'left' ? 'right' : 'left';
 
+                /* 根据 drop 的目标 panel 和 position 计算插入索引 */
+                const targetPanel = event.panel;
+                const allPanels = paneview.panels;
+                let targetIndex = allPanels.findIndex(p => p.id === targetPanel.id);
+
+                /* 根据 position 调整索引 */
+                if (event.position === 'bottom') {
+                    targetIndex = targetIndex + 1;
+                }
+                /* 'top' 位置就用当前索引 */
+
                 /* 延迟执行移动，确保拖拽操作完成 */
                 setTimeout(() => {
-                    moveCardToSidebar(panelId, sourcePosition, props.position);
+                    moveCardToSidebar(panelId, sourcePosition, props.position, { index: targetIndex });
                 }, 0);
             }
         }
@@ -473,6 +457,9 @@ function setupInitialLayout(
 
         /* 存储卡片类型供跨边栏移动使用 */
         getCardTypeMap().set(cardConfig.id, cardConfig.type);
+
+        /* 存储卡片标题供跨边栏移动使用 */
+        getCardTitleMap().set(cardConfig.id, cardConfig.title);
 
         /* 添加面板到 Paneview */
         paneview.addPanel({
@@ -547,15 +534,13 @@ export function Sidebar(props: SidebarProps) {
                 /**
                  * 创建面板头部组件
                  *
-                 * 渲染卡片标题栏（使用拖拽实现跨边栏移动）
+                 * 渲染卡片标题栏，拖拽功能由 dockview 内置处理
                  */
                 createHeaderComponent: (options) => {
-                    return new SolidPaneHeaderRenderer(
-                        options.name,
-                        undefined,
-                        options.id,
-                        props.position
-                    );
+                    /* 从标题映射中获取正确的标题 */
+                    const titleMap = getCardTitleMap();
+                    const title = titleMap.get(options.id) || options.name;
+                    return new SolidPaneHeaderRenderer(title, undefined);
                 },
 
                 /* 启用拖拽排序 */
@@ -605,13 +590,14 @@ export function Sidebar(props: SidebarProps) {
 
         /* ========================================
            跨边栏拖拽支持（原生 HTML5 拖拽事件）
+           用于处理拖拽到空侧边栏的情况
            ======================================== */
         const handleDragOver = (e: DragEvent) => {
-            /* 检查是否是来自另一个 sidebar 的拖拽 */
-            const dragData = window.__sidebarDragData;
-            if (dragData && dragData.fromPosition !== props.position) {
+            /* 使用 dockview 的数据传输机制获取拖拽数据 */
+            const paneData = getPaneData();
+            if (paneData && paneData.viewId !== paneview.id) {
+                /* 来自另一个 paneview 的拖拽 */
                 e.preventDefault();
-                e.stopPropagation();
                 /* 显示拖拽指示器 */
                 containerRef.classList.add('sidebar-drop-target');
             }
@@ -627,20 +613,53 @@ export function Sidebar(props: SidebarProps) {
 
         const handleDrop = (e: DragEvent) => {
             containerRef.classList.remove('sidebar-drop-target');
-            const dragData = window.__sidebarDragData;
-            if (dragData && dragData.fromPosition !== props.position) {
+
+            /* 使用 dockview 的数据传输机制获取拖拽数据 */
+            const paneData = getPaneData();
+            if (paneData && paneData.viewId !== paneview.id) {
+                /* 来自另一个 paneview 的拖拽 */
+                const panelId = paneData.paneId;
+                const sourcePosition = props.position === 'left' ? 'right' : 'left';
+
+                /* 计算 drop 位置索引 */
+                let dropIndex: number = 0;
+                const panels = paneview.panels as PaneviewPanel[];
+
+                if (panels.length > 0) {
+                    const dropY = e.clientY;
+                    dropIndex = panels.length; /* 默认追加到末尾 */
+
+                    /* 遍历面板找到插入位置 */
+                    for (let i = 0; i < panels.length; i++) {
+                        const panelElement = panels[i].element;
+                        if (panelElement) {
+                            const rect = panelElement.getBoundingClientRect();
+                            const panelMidY = rect.top + rect.height / 2;
+                            if (dropY < panelMidY) {
+                                dropIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                /* 执行跨边栏移动 */
                 e.preventDefault();
                 e.stopPropagation();
-                /* 执行跨边栏移动 */
-                moveCardToSidebar(dragData.cardId, dragData.fromPosition, props.position);
-                /* 清理拖拽数据 */
-                window.__sidebarDragData = undefined;
+                moveCardToSidebar(panelId, sourcePosition, props.position, { index: dropIndex });
             }
+        };
+
+        /* 全局 dragend 事件清理 - 确保拖拽结束后清除所有高亮状态 */
+        const handleDragEnd = () => {
+            containerRef.classList.remove('sidebar-drop-target');
         };
 
         containerRef.addEventListener('dragover', handleDragOver);
         containerRef.addEventListener('dragleave', handleDragLeave);
         containerRef.addEventListener('drop', handleDrop);
+        /* 监听 document 的 dragend 事件，确保任何拖拽结束都会清理 */
+        document.addEventListener('dragend', handleDragEnd);
 
         /* 清理 - 仅断开 ResizeObserver，保留 Paneview 以支持 HMR */
         onCleanup(() => {
@@ -648,6 +667,7 @@ export function Sidebar(props: SidebarProps) {
             containerRef.removeEventListener('dragover', handleDragOver);
             containerRef.removeEventListener('dragleave', handleDragLeave);
             containerRef.removeEventListener('drop', handleDrop);
+            document.removeEventListener('dragend', handleDragEnd);
             /* 注意：不销毁 paneview 以便 HMR 复用 */
         });
     });
@@ -739,6 +759,9 @@ export function addCard(
 
     /* 存储卡片类型供跨边栏移动使用 */
     getCardTypeMap().set(cardId, type);
+
+    /* 存储卡片标题供跨边栏移动使用 */
+    getCardTitleMap().set(cardId, options?.title || type);
 
     /* 添加面板 */
     return paneview.addPanel({
@@ -873,12 +896,13 @@ export function moveCardToSidebar(
         return false;
     }
 
-    /* 从类型映射中获取组件类型 */
+    /* 从类型映射中获取组件类型和标题 */
     const cardTypeMap = getCardTypeMap();
+    const cardTitleMap = getCardTitleMap();
     const component = cardTypeMap.get(cardId) || cardId;
-    const title = cardId;
+    const title = cardTitleMap.get(cardId) || cardId;
     const isExpanded = panel.isExpanded();
-    const size = panel.size;
+    /* 不保存 size，让 paneview 自动分配空间 */
 
     /* 从源侧边栏移除 */
     fromPaneview.removePanel(panel);
@@ -889,9 +913,18 @@ export function moveCardToSidebar(
         component,
         title,
         isExpanded,
-        size,
+        /* 不指定 size，使用 Sizing.Distribute 让 paneview 自动分配 */
         index: options?.index,
     });
+
+    /* 强制触发布局更新，确保所有 panel 正确渲染 */
+    setTimeout(() => {
+        const container = toPaneview.element;
+        if (container) {
+            const rect = container.getBoundingClientRect();
+            toPaneview.layout(rect.width, rect.height);
+        }
+    }, 0);
 
     return true;
 }
