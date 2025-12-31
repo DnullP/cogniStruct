@@ -35,6 +35,7 @@ import { SearchBar } from './SearchBar';
 import { GraphView } from './GraphView';
 import { Editor } from './Editor';
 import { Settings } from './Settings';
+import { DCOMInfoCard } from './DCOMInfoCard';
 import {
     AppLayout,
     SidebarLayoutConfig,
@@ -86,6 +87,18 @@ const OutlineCard: CardComponentFactory = () => (
             <p>Document Outline</p>
             <p class="hint">Open a file to see its structure</p>
         </div>
+    </div>
+);
+
+/**
+ * DCOM 信息卡片组件
+ *
+ * 显示当前活动文件的 DCOM 认知对象信息
+ * 使用 appStore.selectedFile() 获取当前选中的文件路径
+ */
+const DCOMCard: CardComponentFactory = () => (
+    <div class="sidebar-card-content">
+        <DCOMInfoCard filePath={appStore.selectedFile()} />
     </div>
 );
 
@@ -151,6 +164,7 @@ const cards: Record<string, CardComponentFactory> = {
     'file-tree': FileTreeCard,
     'search': SearchCard,
     'outline': OutlineCard,
+    'dcom-info': DCOMCard,
 };
 
 /** 面板组件类型映射 */
@@ -187,6 +201,13 @@ const leftSidebarLayout: SidebarLayoutConfig = {
 /** 右侧边栏布局配置 */
 const rightSidebarLayout: SidebarLayoutConfig = {
     cards: [
+        {
+            id: 'dcom',
+            type: 'dcom-info',
+            title: 'DCOM Info',
+            expanded: true,
+            minimumBodySize: 150,
+        },
         {
             id: 'outline',
             type: 'outline',

@@ -69,7 +69,8 @@ pub fn run() {
             commands::get_file_content,
             commands::save_file,
             commands::search_nodes,
-            commands::get_vault_statistics
+            commands::get_vault_statistics,
+            commands::get_dcom_info
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

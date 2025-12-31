@@ -1,0 +1,420 @@
+/**
+ * @fileoverview DCOM 信息卡片样式
+ *
+ * 本文件定义 DCOMInfoCard 组件的样式。
+ * 使用 CSS 自定义属性（CSS Variables）实现主题化。
+ *
+ * @module components/DCOMInfoCard.css
+ *
+ * @classes
+ * - .dcom-info-card - 卡片容器
+ * - .dcom-section - 可折叠的信息部分
+ * - .dcom-field - 单个字段显示
+ * - .dcom-tag - 标签样式
+ * - .dcom-link-item - 链接项样式
+ *
+ * @dependencies
+ * - styles/theme.css - 主题变量定义
+ */
+
+/* ==========================================================================
+   卡片容器
+   ========================================================================== */
+
+/**
+ * .dcom-info-card
+ * DCOM 信息卡片容器
+ *
+ * @layout 垂直布局，内容自适应
+ * @padding 0 - 内边距由子元素控制
+ * @overflow 自动滚动
+ *
+ * @usage
+ * ```html
+ * <div class="dcom-info-card">
+ *   <div class="dcom-section">...</div>
+ * </div>
+ * ```
+ */
+.dcom-info-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    font-size: var(--font-size-sm, 12px);
+    color: var(--text-color, #cccccc);
+}
+
+/* ==========================================================================
+   空状态 & 加载状态 & 错误状态
+   ========================================================================== */
+
+/**
+ * .dcom-empty-state
+ * 无文件选中时的空状态提示
+ *
+ * @layout 居中垂直布局
+ * @style 淡色文字，图标突出
+ */
+.dcom-empty-state,
+.dcom-loading,
+.dcom-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    text-align: center;
+    color: var(--text-muted, #808080);
+}
+
+/**
+ * .dcom-empty-icon, .dcom-loading-spinner, .dcom-error-icon
+ * 状态图标
+ */
+.dcom-empty-icon,
+.dcom-loading-spinner,
+.dcom-error-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+/**
+ * .dcom-loading-spinner
+ * 加载旋转动画
+ */
+.dcom-loading-spinner {
+    animation: dcom-spin 1s linear infinite;
+}
+
+@keyframes dcom-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/**
+ * .dcom-hint
+ * 提示文字
+ */
+.dcom-hint {
+    font-size: var(--font-size-xs, 11px);
+    margin-top: 4px;
+}
+
+/**
+ * .dcom-error
+ * 错误状态样式
+ */
+.dcom-error {
+    color: var(--color-error, #f14c4c);
+}
+
+/* ==========================================================================
+   可折叠部分
+   ========================================================================== */
+
+/**
+ * .dcom-section
+ * 可折叠的信息部分容器
+ *
+ * @border 底部分隔线
+ */
+.dcom-section {
+    border-bottom: 1px solid var(--border-color, #333333);
+}
+
+.dcom-section:last-child {
+    border-bottom: none;
+}
+
+/**
+ * .dcom-section-header
+ * 部分标题栏
+ *
+ * @interactive 可点击切换展开状态
+ * @hover 背景高亮
+ */
+.dcom-section-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+    color: var(--text-color, #cccccc);
+    transition: background-color 0.15s ease;
+}
+
+.dcom-section-header:hover {
+    background-color: var(--bg-hover, rgba(255, 255, 255, 0.05));
+}
+
+/**
+ * .dcom-section-toggle
+ * 展开/折叠图标
+ */
+.dcom-section-toggle {
+    font-size: 10px;
+    width: 12px;
+    text-align: center;
+    color: var(--text-muted, #808080);
+}
+
+/**
+ * .dcom-count-badge
+ * 数量标签
+ *
+ * @layout 自动靠右
+ */
+.dcom-count-badge {
+    margin-left: auto;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: var(--font-size-xs, 11px);
+    background-color: var(--bg-secondary, #2a2a2a);
+    color: var(--text-muted, #808080);
+}
+
+/**
+ * .dcom-section-content
+ * 部分内容区域
+ *
+ * @padding 适当内边距
+ */
+.dcom-section-content {
+    padding: 4px 12px 12px 12px;
+}
+
+/* ==========================================================================
+   字段显示
+   ========================================================================== */
+
+/**
+ * .dcom-field
+ * 单个字段（键值对）
+ *
+ * @layout 标签在左，值在右
+ */
+.dcom-field {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 0;
+}
+
+/**
+ * .dcom-field-label
+ * 字段标签
+ */
+.dcom-field-label {
+    flex-shrink: 0;
+    color: var(--text-muted, #808080);
+    min-width: 60px;
+}
+
+/**
+ * .dcom-field-value
+ * 字段值
+ */
+.dcom-field-value {
+    flex: 1;
+    word-break: break-word;
+}
+
+/**
+ * .dcom-type-badge
+ * 类型标签
+ */
+.dcom-type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: var(--font-size-xs, 11px);
+    background-color: var(--color-primary, #007acc);
+    color: var(--text-inverse, #ffffff);
+}
+
+/**
+ * .dcom-id
+ * ID 显示（截断）
+ */
+.dcom-id {
+    font-family: var(--font-mono, 'Consolas', monospace);
+    font-size: var(--font-size-xs, 11px);
+    color: var(--text-muted, #808080);
+    cursor: help;
+}
+
+/* ==========================================================================
+   标签 & 别名
+   ========================================================================== */
+
+/**
+ * .dcom-tag-list
+ * 标签列表
+ */
+.dcom-tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+/**
+ * .dcom-tag
+ * 单个标签
+ *
+ * @style 圆角背景，带 # 前缀
+ */
+.dcom-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: var(--font-size-xs, 11px);
+    background-color: var(--color-tag-bg, rgba(0, 122, 204, 0.2));
+    color: var(--color-tag-text, #3794ff);
+}
+
+/**
+ * .dcom-alias-list
+ * 别名列表
+ */
+.dcom-alias-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+/**
+ * .dcom-alias
+ * 单个别名
+ */
+.dcom-alias {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: var(--font-size-xs, 11px);
+    background-color: var(--bg-secondary, #2a2a2a);
+    color: var(--text-color, #cccccc);
+}
+
+/* ==========================================================================
+   链接列表
+   ========================================================================== */
+
+/**
+ * .dcom-link-list
+ * 链接列表容器
+ */
+.dcom-link-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/**
+ * .dcom-link-item
+ * 单个链接项
+ *
+ * @layout 图标 + 目标 + 类型
+ * @interactive hover 高亮
+ */
+.dcom-link-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.dcom-link-item:hover {
+    background-color: var(--bg-hover, rgba(255, 255, 255, 0.05));
+}
+
+/**
+ * .dcom-link-icon
+ * 链接图标
+ */
+.dcom-link-icon {
+    flex-shrink: 0;
+    font-size: 12px;
+}
+
+/**
+ * .dcom-link-target
+ * 链接目标
+ */
+.dcom-link-target {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--color-link, #3794ff);
+}
+
+/**
+ * .dcom-link-type
+ * 链接类型标签
+ */
+.dcom-link-type {
+    flex-shrink: 0;
+    font-size: var(--font-size-xs, 11px);
+    color: var(--text-muted, #808080);
+}
+
+/* ==========================================================================
+   属性列表
+   ========================================================================== */
+
+/**
+ * .dcom-property-list
+ * 属性列表容器
+ */
+.dcom-property-list {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ==========================================================================
+   源信息
+   ========================================================================== */
+
+/**
+ * .dcom-source-item
+ * 单个源项
+ */
+.dcom-source-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 0;
+}
+
+/**
+ * .dcom-source-type
+ * 源类型标签
+ */
+.dcom-source-type {
+    font-weight: 500;
+    color: var(--text-color, #cccccc);
+}
+
+/**
+ * .dcom-source-path
+ * 源路径
+ */
+.dcom-source-path {
+    font-family: var(--font-mono, 'Consolas', monospace);
+    font-size: var(--font-size-xs, 11px);
+    color: var(--text-muted, #808080);
+    word-break: break-all;
+}

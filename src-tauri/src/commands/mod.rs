@@ -21,6 +21,7 @@
 //! - [`save_file`] - 保存文件
 //! - [`search_nodes`] - 搜索节点
 //! - [`get_vault_statistics`] - 获取 Vault 统计信息
+//! - [`get_dcom_info`] - 获取文件的 DCOM 信息
 //!
 //! ## 使用示例
 //!
@@ -30,11 +31,14 @@
 //! // 前端调用示例
 //! const result = await invoke('open_vault', { path: '/path/to/vault' });
 //! const stats = await invoke('get_vault_statistics');
+//! const dcomInfo = await invoke('get_dcom_info', { path: 'notes/example.md' });
 //! ```
 
+use crate::adapters::AdapterRegistry;
 use crate::db::{Database, GraphData, Node};
 use crate::sync::{sync_vault, FileWatcher};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -356,6 +360,192 @@ pub async fn get_vault_statistics(
     let db = db_guard.as_ref().ok_or("No vault opened")?;
 
     db.get_statistics().map_err(|e| e.to_string())
+}
+
+/// DCOM 序列化源信息
+///
+/// 描述认知对象的物理存储位置
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DCOMSourceInfo {
+    /// 源类型: "markdown", "binary", "virtual"
+    pub source_type: String,
+    /// 文件路径（如果是物理文件）
+    pub path: Option<String>,
+    /// 最后同步时间戳
+    pub last_sync: Option<i64>,
+}
+
+/// DCOM 链接信息
+///
+/// 描述从当前对象提取的链接
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DCOMLinkInfo {
+    /// 链接目标
+    pub target: String,
+    /// 链接类型: "WikiLink", "BlockReference", "Embed", "External"
+    pub kind: String,
+    /// 显示文本
+    pub display_text: Option<String>,
+}
+
+/// DCOM 对象信息
+///
+/// 前端展示用的认知对象详细信息
+///
+/// # 字段说明
+///
+/// * `id` - 对象唯一标识
+/// * `title` - 标题
+/// * `object_type` - 对象类型（如 "note", "person"）
+/// * `tags` - 标签列表
+/// * `aliases` - 别名列表
+/// * `links` - 提取的链接信息
+/// * `properties` - 自定义属性
+/// * `sources` - 序列化源信息
+/// * `created_at` - 创建时间戳
+/// * `updated_at` - 更新时间戳
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DCOMInfo {
+    /// 对象唯一标识
+    pub id: String,
+    /// 标题
+    pub title: String,
+    /// 对象类型
+    pub object_type: Option<String>,
+    /// 标签列表
+    pub tags: Vec<String>,
+    /// 别名列表
+    pub aliases: Vec<String>,
+    /// 链接信息
+    pub links: Vec<DCOMLinkInfo>,
+    /// 自定义属性
+    pub properties: HashMap<String, serde_json::Value>,
+    /// 序列化源信息
+    pub sources: Vec<DCOMSourceInfo>,
+    /// 创建时间戳
+    pub created_at: i64,
+    /// 更新时间戳
+    pub updated_at: i64,
+}
+
+/// 获取文件的 DCOM 信息
+///
+/// 使用适配器解析指定文件，返回完整的 DCOM 认知对象信息。
+///
+/// # 参数
+///
+/// * `path` - 文件相对路径（相对于知识库根目录）
+/// * `state` - 应用程序状态
+///
+/// # 返回值
+///
+/// * `Ok(DCOMInfo)` - DCOM 对象信息
+/// * `Err(String)` - 获取失败，返回错误信息
+///
+/// # 错误情况
+///
+/// * 未打开知识库
+/// * 文件不存在
+/// * 文件格式不支持
+/// * 解析失败
+#[tauri::command]
+pub async fn get_dcom_info(path: String, state: State<'_, AppState>) -> Result<DCOMInfo, String> {
+    let vault_path_guard = state.vault_path.lock().unwrap();
+    let vault_path = vault_path_guard.as_ref().ok_or("No vault opened")?;
+
+    // 构建完整文件路径
+    let file_path = vault_path.join(&path);
+    if !file_path.exists() {
+        return Err(format!("File not found: {}", path));
+    }
+
+    // 获取适配器
+    let registry = AdapterRegistry::default();
+    let adapter = registry
+        .find_adapter_for_path(&file_path)
+        .ok_or_else(|| format!("Unsupported file type: {}", path))?;
+
+    // 读取文件内容
+    let content = fs::read(&file_path).map_err(|e| format!("Failed to read file: {}", e))?;
+
+    // 使用适配器解析
+    let obj = adapter
+        .load(Path::new(&path), &content)
+        .map_err(|e| format!("Failed to parse file: {}", e))?;
+
+    // 提取链接
+    let extracted_links = adapter.extract_links(&obj);
+    let links: Vec<DCOMLinkInfo> = extracted_links
+        .into_iter()
+        .map(|l| DCOMLinkInfo {
+            target: l.target,
+            kind: format!("{:?}", l.kind),
+            display_text: l.display_text,
+        })
+        .collect();
+
+    // 转换属性为 JSON
+    let properties: HashMap<String, serde_json::Value> = obj
+        .properties()
+        .iter()
+        .filter(|(k, _)| *k != "title" && *k != "content" && *k != "type")
+        .map(|(k, v)| (k.clone(), property_to_json(v)))
+        .collect();
+
+    // 构建源信息
+    let sources: Vec<DCOMSourceInfo> = obj
+        .sources()
+        .iter()
+        .map(|s| match s {
+            crate::dcom::SerializationSource::Markdown(m) => DCOMSourceInfo {
+                source_type: "markdown".to_string(),
+                path: Some(m.path.clone()),
+                last_sync: Some(m.last_modified),
+            },
+            crate::dcom::SerializationSource::Binary(b) => DCOMSourceInfo {
+                source_type: "binary".to_string(),
+                path: Some(b.path.clone()),
+                last_sync: Some(b.last_modified),
+            },
+            crate::dcom::SerializationSource::Virtual(v) => DCOMSourceInfo {
+                source_type: "virtual".to_string(),
+                path: None,
+                last_sync: Some(v.computed_at),
+            },
+        })
+        .collect();
+
+    Ok(DCOMInfo {
+        id: obj.id.to_string(),
+        title: obj.title().unwrap_or("Untitled").to_string(),
+        object_type: obj.get_type().map(|s| s.to_string()),
+        tags: obj.tags().to_vec(),
+        aliases: obj.aliases().to_vec(),
+        links,
+        properties,
+        sources,
+        created_at: obj.created_at,
+        updated_at: obj.updated_at,
+    })
+}
+
+/// 将 PropertyValue 转换为 JSON
+fn property_to_json(value: &crate::dcom::PropertyValue) -> serde_json::Value {
+    use crate::dcom::PropertyValue;
+
+    match value {
+        PropertyValue::Null => serde_json::Value::Null,
+        PropertyValue::String(s) => serde_json::Value::String(s.clone()),
+        PropertyValue::Integer(i) => serde_json::json!(*i),
+        PropertyValue::Float(f) => serde_json::json!(*f),
+        PropertyValue::Boolean(b) => serde_json::Value::Bool(*b),
+        PropertyValue::DateTime(dt) => serde_json::Value::String(dt.clone()),
+        PropertyValue::Reference(r) => serde_json::json!({ "ref": r }),
+        PropertyValue::List(items) => {
+            serde_json::Value::Array(items.iter().map(property_to_json).collect())
+        }
+        PropertyValue::Json(j) => j.clone(),
+    }
 }
 
 #[cfg(test)]
