@@ -51,6 +51,30 @@
     background-color: transparent;
 }
 
+/* 确保 Paneview 内部容器即使为空也占满高度，以接收拖放事件 */
+.sidebar .dv-pane-container {
+    height: 100%;
+    min-height: 100%;
+}
+
+.sidebar .dv-split-view-container {
+    height: 100%;
+    min-height: 100%;
+}
+
+.sidebar .dv-view-container {
+    min-height: 100%;
+    /* 关键：确保空容器也能接收事件 */
+    flex: 1;
+}
+
+/* 空侧边栏的拖放占位 - 使用 flex 撑满 */
+.sidebar .dv-view-container:empty {
+    display: flex;
+    flex: 1;
+    min-height: 200px;
+}
+
 /* ==========================================================================
    卡片头部样式
    ========================================================================== */
@@ -156,32 +180,13 @@
    跨边栏拖拽样式
    ========================================================================== */
 
-/* 可拖拽的卡片头部 */
-.sidebar-card-draggable {
+/* dockview 内置的 pane header 是可拖拽的 */
+.sidebar .pane-header {
     cursor: grab;
 }
 
-.sidebar-card-draggable:active {
+.sidebar .pane-header:active {
     cursor: grabbing;
-}
-
-/* 拖拽手柄提示 */
-.sidebar-card-drag-hint {
-    opacity: 0;
-    transition: opacity 0.15s ease;
-    color: var(--text-secondary, #9a9a9a);
-    font-size: 10px;
-    margin-left: auto;
-    padding: 0 4px;
-}
-
-.sidebar-card-header:hover .sidebar-card-drag-hint {
-    opacity: 0.6;
-}
-
-/* 拖拽中的卡片 */
-.sidebar-card-header.dragging {
-    opacity: 0.5;
 }
 
 /* 跨边栏拖拽目标高亮 */
@@ -189,6 +194,12 @@
     outline: 2px dashed var(--vscode-focusBorder, #007fd4);
     outline-offset: -2px;
     background-color: rgba(0, 127, 212, 0.1);
+}
+
+/* dockview 内置的拖放 overlay 样式增强 */
+.sidebar .dv-drop-target-dropzone {
+    background-color: rgba(0, 127, 212, 0.3) !important;
+    border: 2px solid var(--vscode-focusBorder, #007fd4) !important;
 }
 
 /* ==========================================================================
